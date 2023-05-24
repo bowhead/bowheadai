@@ -1,0 +1,9 @@
+
+#root,body, html {
+  height: 100%;
+  background-color: #F3F3F3;
+}
+
+#filesContainer h3.chakra-heading {
+  font-size: 1vw;
+}
