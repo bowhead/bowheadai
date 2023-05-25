@@ -13,6 +13,7 @@ CORS(app)
 @app.route('/upload', methods=['POST'])
 def upload_files():
     dir = 'temp/'
+    if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
     for f in os.listdir(dir):
         if os.path.isfile(os.path.join(dir, f)):
             os.remove(os.path.join(dir, f))
@@ -21,6 +22,7 @@ def upload_files():
 
     
     dir = 'images/'
+    if not os.path.exists(dir): os.makedirs(dir)
     for f in os.listdir(dir):
         if os.path.isfile(os.path.join(dir, f)):
             os.remove(os.path.join(dir, f))
@@ -29,6 +31,7 @@ def upload_files():
     
 
     dir = 'output/'
+    if not os.path.exists(dir): os.makedirs(dir)
     for f in os.listdir(dir):
         if os.path.isfile(os.path.join(dir, f)):
             os.remove(os.path.join(dir, f))

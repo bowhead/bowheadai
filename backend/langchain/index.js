@@ -31,6 +31,9 @@ const storage = multer.diskStorage({
     const uploadPath = join(__dirname, "uploads"); // Ruta donde se guardarán los archivos
 
     // Crear la carpeta si no existe
+    if (!fs.existsSync(uploadPath)){
+      fs.mkdirSync(uploadPath);
+  }
     deleteFolderRecursively('uploads');
 
     cb(null, uploadPath);

@@ -1,7 +1,6 @@
 src/healthDAODocs/
 node_modules/
 .env
-src/healthDAOChat.js
 Apple_Health_Records/
 Health_Record/
 eng.traineddata
