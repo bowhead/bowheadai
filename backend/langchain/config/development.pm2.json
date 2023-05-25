@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "langchain",
+      "script": "index.js",
+      "watch": true,
+      "instance_var": "INSTANCE_ID",
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "env": {
+        "NODE_ENV": "development",
+        "TZ": "utc"
+      }
+    }
+  ]
+}

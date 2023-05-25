@@ -6,8 +6,10 @@ import fs from "fs";
 import dotenv from 'dotenv';
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
+
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
+import {GetConfig} from "./src/helpers/leanConfig.js"
 
 dotenv.config()
 
@@ -16,7 +18,7 @@ const vectorsDirectory = join(__dirname, "src", "vectors");
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:3000']
+  origin: GetConfig('cors')
 }));
 
 const PORT = 3001;
