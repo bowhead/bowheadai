@@ -1,7 +1,8 @@
 import { Box, Flex, Heading, IconButton } from '@chakra-ui/react';
 import { MdRemoveCircle } from 'react-icons/md';
 
-function FilesList({ fileList, removeFile, ...props }) {
+function Sidebar({ fileList, removeFile, ...props }) {
+  
   const onRemove = (e) => {
     removeFile(e.currentTarget.getAttribute('data-index'));
   }
@@ -20,6 +21,7 @@ function FilesList({ fileList, removeFile, ...props }) {
     </Flex>
     
   );
+  
 }
 
-export default FilesList;
+export default Sidebar;

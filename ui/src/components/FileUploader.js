@@ -1,47 +1,89 @@
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text } from "@chakra-ui/react";
+import { useState, useRef, useEffect } from "react";
 
-function FileUploader({ filesAddedCallback, ...props}) {
-  const fileSelector = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.onchange = () => {
-      uploadFiles(input.files);
-    };
-    input.click();
+function FileUploader({ onFilesUploaded,  ...props }) {
+  const fileInputRef = useRef(null);
+  const [files, setFiles] = useState([]);
+
+  useEffect(() => {
+    if (files.length > 0) {
+      createVector();
+    }
+  });
+
+  function handleDragOver(event) {
+    event.preventDefault();
   }
 
-  const handleFileUpload = (event) => {
+  function handleDragLeave(event) {
     event.preventDefault();
-    uploadFiles(event.dataTransfer.files);
-  };
+  }
 
-  const handleDragOver = (event) => {
+  function handleDrop(event) {
     event.preventDefault();
-  };
+    const fileList = Array.from(event.dataTransfer.files);
+    setFiles(fileList);
+  }
 
-  const uploadFiles = (fileList) => {
-    filesAddedCallback(fileList);
+  function handleFileInputChange(event) {
+    const fileList = Array.from(event.target.files);
+    setFiles(fileList);
+  }
+
+
+
+  async function createVector() {
+    if (files.length === 0) {
+      return;
+    }
+
+
+    const formData = new FormData();
+
+    files.forEach((file, index) => {
+      formData.append('files', file);
+    });
+
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log("File uploaded successfully!");
+       
+        onFilesUploaded(files);
+      } else {
+        console.log("Failed to upload file.");
+      }
+    } catch (error) {
+      console.log("Error occurred while uploading the file:", error);
+    }
   }
 
   return (
-    <Box
-      border="2px dashed"
-      borderColor="daoTeal"
-      borderRadius="md"
-      bgColor="white"
-      p="6"
-      textAlign="center"
-      onDrop={handleFileUpload}
-      onDragOver={handleDragOver}
-      onClick={fileSelector}
-      {...props}
-    >
-      <Heading as="h3" mb="4" color="daoPurple">Drag and drop files here</Heading>
-      <Text fontSize="sm" color="gray.500">
-        or click to select files
-      </Text>
-    </Box>
+  
+      <Box 
+        border="2px dashed"
+        borderColor="daoTeal"
+        borderRadius="md"
+        bgColor="white"
+        p="6"
+        textAlign="center"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => fileInputRef.current.click()}
+        {...props}
+      >
+        <Heading as="h3" mb="4" color="daoPurple">Drag and drop files here</Heading>
+        <Text fontSize="sm" color="gray.500">
+          or click to select files
+        </Text>
+        <input type="file" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileInputChange} multiple />
+      </Box>
+      
   );
 }
 
