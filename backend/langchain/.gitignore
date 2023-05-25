@@ -4,7 +4,6 @@ node_modules/
 src/healthDAOChat.js
 Apple_Health_Records/
 Health_Record/
-uploads/
 eng.traineddata
 
 # exclude everything
