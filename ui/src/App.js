@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {Flex, Box, ChakraProvider, extendTheme, Center } from '@chakra-ui/react';
 import FileUploader from './components/FileUploader';
-import Chat from './components/TextInput';
+import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
