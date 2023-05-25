@@ -1,3 +1,10 @@
+# .ENV File
+A .env file should be added with the OpenAI API Key
+
+```
+OPENAI_API_KEY=""
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
