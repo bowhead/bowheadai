@@ -180,4 +180,3 @@ dependencies:
     - zipp==3.15.0
     - zope-event==4.6
     - zope-interface==6.0
-# prefix: /home/felipe-garza/anaconda3/envs/paddle_env
