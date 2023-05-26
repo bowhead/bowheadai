@@ -7,6 +7,7 @@ from paddleocr import PPStructure,draw_structure_result,save_structure_res, Padd
 import requests
 import shutil
 from dotenv import load_dotenv
+from flask_socketio import SocketIO, emit
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,12 +17,8 @@ api_url = os.getenv('API_URL')
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-@app.route('/update', methods=['POST'])
-def update_files():
-    # Check if files were sent
-    if 'files' not in request.files:
-        return 'No files uploaded', 400
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
@@ -92,10 +89,11 @@ def upload_files():
         else:
             file.save("output/"+file.filename)
     
-    print('INFO: Paddle Process')        
+    print('INFO: Paddle Process')
+    socketio.emit('progress', {'progress': 33})      
     paddle_process(old_files)
     
-    
+    socketio.emit('progress', {'progress': 66})
     print('INFO: Create Vector')
     post_files()
 
@@ -154,7 +152,6 @@ def post_files():
     response = requests.post(api_url, files=files)
 
     # Print the response
-    print(response.text)
-
+    print(response.text
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app, host='0.0.0.0', port=5000)
