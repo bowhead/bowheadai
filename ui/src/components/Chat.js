@@ -9,7 +9,7 @@ function Chat({...props}) {
   async function handleSendMessage() {
     if (inputValue.trim() !== "" ) {
         setMessages([...messages, "User: " + inputValue]);
-        
+        setInputValue("");
       try {
         const response = await fetch("http://localhost:3001/send-message", {
           method: "POST",
@@ -31,7 +31,7 @@ function Chat({...props}) {
       }
 
       
-      setInputValue("");
+      
     }
   }
 

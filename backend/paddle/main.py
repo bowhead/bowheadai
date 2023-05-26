@@ -6,37 +6,57 @@ import cv2
 from paddleocr import PPStructure,draw_structure_result,save_structure_res, PaddleOCR
 import requests
 import shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the URL variables
+api_url = os.getenv('API_URL')
 
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/update', methods=['POST'])
+def update_files():
+    # Check if files were sent
+    if 'files' not in request.files:
+        return 'No files uploaded', 400
+
 @app.route('/upload', methods=['POST'])
 def upload_files():
-    dir = 'temp/'
-    if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
-    for f in os.listdir(dir):
-        if os.path.isfile(os.path.join(dir, f)):
-            os.remove(os.path.join(dir, f))
-        else:
-            shutil.rmtree(os.path.join(dir, f))
+    #delete_old_files = True
 
+    # Get the value of deleteOldFiles from the form data
+    delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     
-    dir = 'images/'
-    if not os.path.exists(dir): os.makedirs(dir)
-    for f in os.listdir(dir):
-        if os.path.isfile(os.path.join(dir, f)):
-            os.remove(os.path.join(dir, f))
-        else:
-            shutil.rmtree(os.path.join(dir, f))
     
+    if delete_old_files:
+        dir = 'temp/'
+        if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
+        for f in os.listdir(dir):
+            if os.path.isfile(os.path.join(dir, f)):
+                os.remove(os.path.join(dir, f))
+            else:
+                shutil.rmtree(os.path.join(dir, f))
 
-    dir = 'output/'
-    if not os.path.exists(dir): os.makedirs(dir)
-    for f in os.listdir(dir):
-        if os.path.isfile(os.path.join(dir, f)):
-            os.remove(os.path.join(dir, f))
-        else:
-            shutil.rmtree(os.path.join(dir, f))
+        
+        dir = 'images/'
+        if not os.path.exists(dir): os.makedirs(dir)
+        for f in os.listdir(dir):
+            if os.path.isfile(os.path.join(dir, f)):
+                os.remove(os.path.join(dir, f))
+            else:
+                shutil.rmtree(os.path.join(dir, f))
+        
+
+        dir = 'output/'
+        if not os.path.exists(dir): os.makedirs(dir)
+        for f in os.listdir(dir):
+            if os.path.isfile(os.path.join(dir, f)):
+                os.remove(os.path.join(dir, f))
+            else:
+                shutil.rmtree(os.path.join(dir, f))
     
     # Check if files were sent
     if 'files' not in request.files:
@@ -44,8 +64,16 @@ def upload_files():
     
     uploaded_files = request.files.getlist('files')
 
+    # Get the names of the old files
+    old_files = get_file_names('temp/') + get_file_names('images/')
+    
     # Process each uploaded file
     for file in uploaded_files:
+        # Check if the file is already present
+        if file.filename in old_files:
+            print(f'INFO: Skipping file {file.filename}, already processed')
+            continue
+        print('INFO: Image Process ' + file.filename)
         
         # Save the file or perform any desired operations
         filename = file.filename.split(".")
@@ -65,31 +93,37 @@ def upload_files():
             file.save("output/"+file.filename)
     
     print('INFO: Paddle Process')        
-    paddle_process()
+    paddle_process(old_files)
     
     
     print('INFO: Create Vector')
     post_files()
 
-    
         
     
     return 'Files uploaded successfully'
 
+def get_file_names(dir):
+    if os.path.exists(dir):
+        return [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
+    return []
 
-def pdf_to_img():
-    pages = convert_from_path('foobar.pdf', 500)
-    for count, page in enumerate(pages):
-        page.save(f'images/prueba{count}.jpg', 'JPEG')
-
-def paddle_process():
+def paddle_process(old_files):
     #table_engine = PPStructure(show_log=False)
-    ocr = PaddleOCR(show_log=False)
+    
 
     save_folder = './output'
     files = os.listdir('images/')
 
+   
+    
+    ocr = PaddleOCR(show_log=False)
     for file in files:
+        if file in old_files:
+            print(f'INFO: Skipping image {file}, already processed')
+            continue
+        print('INFO: Paddle Process ' + file)
+
         img_path = f'images/{file}'
         img = cv2.imread(img_path)
         #result = table_engine(img)
@@ -115,9 +149,9 @@ def post_files():
             file_content = file.read() 
         files.append(('files', (file_path, file_content, 'application/octet-stream')))
 
-    print('INFO: Files complete')
+    print('INFO: Langchain Process')
     # Send the POST request
-    response = requests.post('http://localhost:3001/upload', files=files)
+    response = requests.post(api_url, files=files)
 
     # Print the response
     print(response.text)

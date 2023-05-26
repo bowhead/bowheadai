@@ -1,15 +1,15 @@
 import { Box, Heading, Text } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 
-function FileUploader({ onFilesUploaded,  ...props }) {
+function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
-
+  
   useEffect(() => {
     if (files.length > 0) {
       createVector();
     }
-  });
+  }, [files]);
 
   function handleDragOver(event) {
     event.preventDefault();
@@ -30,7 +30,7 @@ function FileUploader({ onFilesUploaded,  ...props }) {
     setFiles(fileList);
   }
 
-
+  
 
   async function createVector() {
     if (files.length === 0) {
@@ -39,11 +39,13 @@ function FileUploader({ onFilesUploaded,  ...props }) {
 
 
     const formData = new FormData();
+    formData.append('deleteOldFiles', deleteOldFiles ? 'true' : 'false');
 
     files.forEach((file, index) => {
       formData.append('files', file);
     });
 
+    
     try {
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
@@ -61,7 +63,7 @@ function FileUploader({ onFilesUploaded,  ...props }) {
       console.log("Error occurred while uploading the file:", error);
     }
   }
-
+  
   return (
   
       <Box 
