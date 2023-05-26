@@ -1,5 +1,3 @@
-
-//i have the following estructures in my App.js: 
 import React, { useState } from 'react';
 import {Flex, Box, ChakraProvider, extendTheme, Center } from '@chakra-ui/react';
 import FileUploader from './components/FileUploader';
@@ -16,16 +14,16 @@ const daoTheme = extendTheme({
 
 function App() {
   const [filesUploaded, setFilesUploaded] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [filesList, setFilesList] = useState([]);
 
   const handleFilesUploaded = (files) => {
     console.log(files)
     setFilesUploaded(true);
-    setFiles(files);
+    setFilesList((prevFiles) => [...prevFiles, ...files]);
   };
 
   const handleFileRemoval = (idx) => {
-    setFiles(oldFiles => {
+    setFilesList(oldFiles => {
       let copy = [...oldFiles];
       console.log(idx, copy)
       copy.splice(idx, 1);
@@ -34,20 +32,19 @@ function App() {
     });
   }
 
-
   return (
     <ChakraProvider theme={daoTheme}>
       <Flex color="white" alignItems="stretch" height="100%">
         <Box width="20%" height="100%" bgColor="white" id='filesContainer'>
-          <Sidebar fileList={files} removeFile={handleFileRemoval}/>
-          {filesUploaded && <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} margin="0 auto"/>}
+          <Sidebar fileList={filesList} removeFile={handleFileRemoval}/>
+          {filesUploaded && <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={false} margin="0 auto"/>}
         </Box>
         <Box flex="1" height="100%" direction="column">
           
-            {!filesUploaded && <Center height="85%"><FileUploader width="80%" onFilesUploaded={handleFilesUploaded} /></Center>}
+            {!filesUploaded && <Center height="85%"><FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={true} /></Center>}
             
             {filesUploaded &&
-              <Chat width="80%" bgColor="white" uploadedFiles={files} />
+              <Chat width="80%" bgColor="white" />
            }
           
         </Box>
@@ -55,5 +52,6 @@ function App() {
     </ChakraProvider>
   );
 }
+
 
 export default App;
