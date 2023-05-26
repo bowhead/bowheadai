@@ -1,13 +1,19 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading, Text, Image, Progress } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
+import io from "socket.io-client";
 
 function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   
   useEffect(() => {
     if (files.length > 0) {
       createVector();
+      setUploading(true);
+      setProgress(10)
+
     }
   }, [files]);
 
@@ -29,6 +35,18 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
     const fileList = Array.from(event.target.files);
     setFiles(fileList);
   }
+
+  useEffect(() => {
+    const socket = io("http://localhost:5000/upload");
+    socket.on("progress", ({ progress }) => {
+      setProgress(progress);
+      console.log(progress)
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   
 
@@ -65,10 +83,14 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   }
   
   return (
-  
+      
       <Box 
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
         border="2px dashed"
-        borderColor="daoTeal"
+        borderColor="daoPurple"
         borderRadius="md"
         bgColor="white"
         p="6"
@@ -79,10 +101,29 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         onClick={() => fileInputRef.current.click()}
         {...props}
       >
-        <Heading as="h3" mb="4" color="daoPurple">Drag and drop files here</Heading>
-        <Text fontSize="sm" color="gray.500">
+        
+        <Image mb="4" src="/file.png" alt="File" />
+        
+        {uploading ? (
+        <>
+          <Heading as="h3" mb={2} color="daoPurple">
+            Uploading...
+          </Heading>
+        
+          
+        </>
+      ) : (
+        <Heading as="h3" mb={2} color="daoPurple">
+          Drag and drop files here
+        </Heading>
+      )}
+      {!uploading && (
+        <Text fontSize="sm" color="gray.500" mb={4}>
           or click to select files
         </Text>
+      )}
+      <Progress value={progress} size="md" w="100%" mb={8} mt={8}/>
+
         <input type="file" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileInputChange} multiple />
       </Box>
       
