@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  ws:
+    image: healthdao-pdf-processing:latest
+    container_name: healthdao-pdf-processing
+    build:
+      context: ./paddle/
+    networks:
+      - ws
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./paddle:/api
+
+networks:
+    ws:
