@@ -6,7 +6,7 @@ COPY environment.yaml .
 COPY main.py .
 
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0
-RUN sudo apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+RUN apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
 
 RUN conda config --add channels conda-forge
 RUN conda env create --file environment.yaml
