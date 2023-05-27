@@ -6,14 +6,14 @@ import cv2
 from paddleocr import PPStructure,draw_structure_result,save_structure_res, PaddleOCR
 import requests
 import shutil
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit
 
 # Load environment variables from .env file
-load_dotenv()
+#load_dotenv()
 
 # Access the URL variables
-api_url = os.getenv('API_URL')
+api_url = "http://localhost:3001/upload"
 
 app = Flask(__name__)
 CORS(app)
@@ -152,6 +152,7 @@ def post_files():
     response = requests.post(api_url, files=files)
 
     # Print the response
-    print(response.text
+    print(response.text)
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
