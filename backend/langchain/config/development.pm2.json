@@ -9,7 +9,8 @@
       "ignore_watch": [
         ".git",
         "uploads",
-        "node_modules"
+        "node_modules",
+        "healthDAOVector"
       ],
       "env": {
         "NODE_ENV": "development",
