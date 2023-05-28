@@ -8,7 +8,8 @@
       "log_date_format": "YYYY-MM-DD HH:mm Z",
       "ignore_watch": [
         ".git",
-        "uploads"
+        "uploads",
+        "node_modules"
       ],
       "env": {
         "NODE_ENV": "development",
