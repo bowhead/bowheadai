@@ -9,6 +9,8 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [requestStatus, setRequestStatus] = useState('Uploading files...');
+  const [requestError, setRequestError] = useState(false);
   
   useEffect(() => {
     if (files.length > 0) {
@@ -42,6 +44,10 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
     socket.on("progress", (data) => {
       // Update the progress state when receiving 'progress' event from the server
       setProgress(data.progress);
+      if (data.progress===33)setRequestStatus('Processing files...')
+      if (data.progress===66)setRequestStatus('Creating vector...')
+      if (data.progress===100)setRequestStatus('Complete...')
+
       console.log(data.progress)
     });
 
@@ -80,11 +86,18 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         console.log("File uploaded successfully!");
        
         onFilesUploaded(files);
+        setUploading(false);
       } else {
         console.log("Failed to upload file.");
+        if (progress===10)setRequestStatus('Failed Uploading Files!')
+        if (progress===33)setRequestStatus('Failed Processing Files!')
+        if (progress===66)setRequestStatus('Failed Creating Vector!')
+        setRequestError(true)
       }
     } catch (error) {
       console.log("Error occurred while uploading the file:", error);
+      setRequestStatus('Error occurred while uploading the file!')
+      setRequestError(true)
     }
   }
   
@@ -113,13 +126,14 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         {uploading ? (
         <>
           <Heading as="h3" mb={2} color="daoPurple">
-            Uploading...
+            {requestStatus}
           </Heading>
         
           <Progress value={progress} size="md" w="100%" mb={8} mt={8}/>
+          {/*<Progress size="md" w="100%" mb={8} mt={8} isIndeterminate/>*/}
         </>
       ) : (
-        <Heading as="h3" mb={2} color="daoPurple">
+        <Heading as="h3" mb={2} color={requestError ? "red" : "daoPurple"}>
           Drag and drop files here
         </Heading>
       )}
@@ -127,8 +141,9 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         <Text fontSize="sm" color="gray.500" mb={4}>
           or click to select files
         </Text>
+        
       )}
-      
+        
 
         <input type="file" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileInputChange} multiple />
       </Box>
