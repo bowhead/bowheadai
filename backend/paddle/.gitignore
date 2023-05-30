@@ -2,3 +2,4 @@ images/
 temp/
 output/
 venv/
+__pycache__/

@@ -19,6 +19,9 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+@socketio.on('connect')
+def handle_connect():
+    emit('message', {'text': 'Connected'})
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
@@ -27,7 +30,7 @@ def upload_files():
     # Get the value of deleteOldFiles from the form data
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     
-    
+    socketio.emit('progress', {'progress': 10})
     if delete_old_files:
         dir = 'temp/'
         if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
@@ -96,8 +99,8 @@ def upload_files():
     socketio.emit('progress', {'progress': 66})
     print('INFO: Create Vector')
     post_files()
-
-        
+    
+    socketio.emit('progress', {'progress': 100})
     
     return 'Files uploaded successfully'
 
