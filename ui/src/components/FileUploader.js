@@ -2,6 +2,8 @@ import { Box, Heading, Text, Image, Progress } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import io from "socket.io-client";
 
+const socket = io("https://apichat.bowheadhealth.io/");
+
 function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
@@ -37,18 +39,22 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   }
 
   useEffect(() => {
-    const socket = io("http://localhost:5000/upload");
-    socket.on("progress", ({ progress }) => {
-      setProgress(progress);
-      console.log(progress)
+    socket.on("progress", (data) => {
+      // Update the progress state when receiving 'progress' event from the server
+      setProgress(data.progress);
+      console.log(data.progress)
+    });
+
+    socket.on("message", (data) => {
+      // Update the progress state when receiving 'progress' event from the server
+      console.log(data.text)
     });
 
     return () => {
-      socket.disconnect();
+      console.log("off")
+      socket.off("progress"); // Clean up the event listener when the component unmounts
     };
   }, []);
-
-  
 
   async function createVector() {
     if (files.length === 0) {
@@ -65,7 +71,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
 
     
     try {
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch("https://apichat.bowheadhealth.io/upload", {
         method: "POST",
         body: formData,
       });
@@ -110,7 +116,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
             Uploading...
           </Heading>
         
-          
+          <Progress value={progress} size="md" w="100%" mb={8} mt={8}/>
         </>
       ) : (
         <Heading as="h3" mb={2} color="daoPurple">
@@ -122,7 +128,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
           or click to select files
         </Text>
       )}
-      <Progress value={progress} size="md" w="100%" mb={8} mt={8}/>
+      
 
         <input type="file" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileInputChange} multiple />
       </Box>
