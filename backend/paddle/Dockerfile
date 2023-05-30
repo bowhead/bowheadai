@@ -9,4 +9,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT [ "gunicorn", "-b", "0.0.0.0:3000", "-k", "eventlet", "-w", "1", "main:app"]
+ENTRYPOINT [ "gunicorn", "-b", "0.0.0.0:3000", "--timeout", "600" ,"-k", "eventlet", "-w", "1", "main:app"]
