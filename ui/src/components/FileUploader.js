@@ -89,9 +89,10 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
        
         onFilesUploaded(files);
         setUploading(false);
+        
       } else {
         console.log("Failed to upload file.");
-        setRequestStatus('Failed Processing Files!')
+        setRequestStatus('Failed to process files!')
         setRequestError(true)
         setUploading(false)
       }
