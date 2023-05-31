@@ -17,7 +17,6 @@ function App() {
   const [filesList, setFilesList] = useState([]);
 
   const handleFilesUploaded = (files) => {
-    console.log(files)
     setFilesUploaded(true);
     setFilesList((prevFiles) => [...prevFiles, ...files]);
   };
