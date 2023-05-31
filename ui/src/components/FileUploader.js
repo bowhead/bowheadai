@@ -9,14 +9,16 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [requestStatus, setRequestStatus] = useState('Uploading files...');
+  const [requestStatus, setRequestStatus] = useState('Drag and drop files here');
   const [requestError, setRequestError] = useState(false);
   
   useEffect(() => {
     if (files.length > 0) {
       createVector();
       setUploading(true);
+      setRequestStatus("Uploading files...")
       setProgress(10)
+      setRequestError(false)
 
     }
   }, [files]);
@@ -89,15 +91,15 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         setUploading(false);
       } else {
         console.log("Failed to upload file.");
-        if (progress===10)setRequestStatus('Failed Uploading Files!')
-        if (progress===33)setRequestStatus('Failed Processing Files!')
-        if (progress===66)setRequestStatus('Failed Creating Vector!')
+        setRequestStatus('Failed Processing Files!')
         setRequestError(true)
+        setUploading(false)
       }
     } catch (error) {
       console.log("Error occurred while uploading the file:", error);
-      setRequestStatus('Error occurred while uploading the file!')
+      setRequestStatus('Error occurred while uploading the files!')
       setRequestError(true)
+      setUploading(false)
     }
   }
   
@@ -125,7 +127,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         
         {uploading ? (
         <>
-          <Heading as="h3" mb={2} color="daoPurple">
+          <Heading as="h3" mb={2} color={requestError ? "red" : "daoPurple"}>
             {requestStatus}
           </Heading>
         
@@ -134,12 +136,12 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
         </>
       ) : (
         <Heading as="h3" mb={2} color={requestError ? "red" : "daoPurple"}>
-          Drag and drop files here
+            {requestStatus}
         </Heading>
       )}
-      {!uploading && (
+      {!uploading && requestError &&(
         <Text fontSize="sm" color="gray.500" mb={4}>
-          or click to select files
+          {requestError ? "Try to Upload again" : "or click to select files"}
         </Text>
         
       )}
