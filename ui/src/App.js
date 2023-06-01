@@ -34,13 +34,18 @@ function App() {
   return (
     <ChakraProvider theme={daoTheme}>
       <Flex color="white" alignItems="stretch" height="100%">
-        <Box width="20%" height="100%" bgColor="white" id='filesContainer'>
+        {filesUploaded && <Box width="20%" height="100%" bgColor="white" id='filesContainer'>
           <Sidebar fileList={filesList} removeFile={handleFileRemoval}/>
-          {filesUploaded && <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={false} margin="0 auto"/>}
-        </Box>
+          <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={false} margin="0 auto"/>
+        </Box>}
         <Box flex="1" height="100%" direction="column">
           
-            {!filesUploaded && <Center height="85%"><FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={true} /></Center>}
+            {!filesUploaded && 
+            <Box height="100%" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+              <p style={{color: 'black', marginBottom:"12px"}}>Upload any PDF, CSV, image or JSON and start chatting with your health data.</p>
+              <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={true} />
+            </Box>
+            }
             
             {filesUploaded &&
               <Chat width="80%" bgColor="white" />

@@ -5,11 +5,13 @@ import { FaPaperPlane } from "react-icons/fa";
 function Chat({...props}) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [loadingResp, setLoadingResp] = useState(false);
 
   async function handleSendMessage() {
     if (inputValue.trim() !== "" ) {
-        setMessages([...messages, "User: " + inputValue]);
-        setInputValue("");
+      setMessages([...messages, { "class":"user-msg", "msg": inputValue}]);
+      setInputValue("");
+      setLoadingResp(true);
       try {
         const response = await fetch("https://gptpi.bowheadhealth.io/send-message", {
           method: "POST",
@@ -19,9 +21,11 @@ function Chat({...props}) {
           body: JSON.stringify({ message: inputValue, history: messages})
         });
 
+        setLoadingResp(false);
+
         if (response.ok) {
           const responseData = await response.json();
-          setMessages(messages => [...messages, "System: " + responseData.response]);
+          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseData.response }]);
         } else {
           throw new Error("Error en la solicitud");
         }
@@ -48,22 +52,24 @@ function Chat({...props}) {
   
 
   return (
-    <Box p={4} align="center" >
-      <Box height="80vh" width="83%" sx={{ overflow: "auto" }}>
+    <Box p={4}>
+      <Box height="80vh" width="83%" sx={{ overflow: "auto" }} flex="1">
         {messages.map((message, index) => (
           <Box
-            align="left"
             key={index}
-            bg="white"
             p={2}
             color="black"
             borderRadius="md"
             mb={2}
-            alignSelf={index % 2 === 0 ? "flex-start" : "flex-end"}
+            className={message.class}
           >
-            {message}
+            {message.msg}
           </Box>
         ))}
+        {loadingResp && <Box alignItems="center">
+          <img src={process.env.PUBLIC_URL + 'loader.gif'} alt="loader"/>
+        </Box>}
+        
       </Box>
 
       <Box>
