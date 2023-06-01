@@ -1,11 +1,8 @@
-import { Box, Flex, Heading, IconButton } from '@chakra-ui/react';
-import { MdRemoveCircle } from 'react-icons/md';
+import { Box, Flex, Heading } from '@chakra-ui/react';
 
 function Sidebar({ fileList, removeFile, ...props }) {
   
-  const onRemove = (e) => {
-    removeFile(e.currentTarget.getAttribute('data-index'));
-  }
+
 
   return (
     <Flex direction="column">
@@ -15,9 +12,7 @@ function Sidebar({ fileList, removeFile, ...props }) {
         .map((item, idx) => (
           <Box key={idx} color="gray.600" display="flex" direction="row" fontSize="1vw" p="5">
             <Box flex="1">{item.name} <small>X pages</small></Box>
-            <Box>
-              <IconButton icon={<MdRemoveCircle/>} data-index={idx} bgColor="lightpink" onClick={onRemove}/>
-            </Box>
+            
           </Box>
         ))}
     </Flex>
