@@ -13,7 +13,7 @@ from flask_socketio import SocketIO, emit
 #load_dotenv()
 
 # Access the URL variables
-api_url = "http://langchain:3001/upload"
+api_url = "http://localhost:3001/upload"
 
 app = Flask(__name__)
 CORS(app)
