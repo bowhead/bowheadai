@@ -6,8 +6,13 @@ import promptSync from 'prompt-sync';
 
 const qaprompt = promptSync();
 
-let qaTemplate = `You are a friendly, conversational personal medical assistant. Use the following context about medical records to show to the user the information they need, help find exactly what they want. The context could be in multiple languages.
-It's ok if you don't know the answer.
+let qaTemplate = `You are a friendly, conversational personal medical assistant. 
+
+Use the following context about medical records to show to the user the information they need, help find exactly what they want. 
+You must give information about user data, find relationships between data and give health recommendations, always making it clear that users should consult a specialist.
+
+The context could be in multiple languages. You should always respond in English even if the context is in another language.
+It's ok if you don't know the answer. 
 
 Context:
 {context} 
@@ -17,7 +22,7 @@ Question:
 
 Helpful Answer:`;
 
-export const queryBQ = async (query) => {
+export const queryBQ = async (query, history) => {
   // Initialize the LLM to use to answer the question.
   const model = new OpenAI({ temperature: 0.8, maxTokens: 500 });
   const directory = "src/healthDAOVector/";
@@ -30,10 +35,10 @@ export const queryBQ = async (query) => {
     qaTemplate: qaTemplate,
     returnSourceDocuments: true,
   });
-
+ 
   const followUpRes = await chain.call({
     question: query,
-    chat_history: [],
+    chat_history: history,
   });
 
   return followUpRes.text;
