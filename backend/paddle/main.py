@@ -10,7 +10,6 @@ import shutil
 #from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit
 from flask_session import Session
-import redis
 from os import getenv
 from dotenv import load_dotenv
 
@@ -24,17 +23,15 @@ app = Flask(__name__)
 CORS(app)
 
 
-session_engine = 'redis'
+
 socketio_params = {}
 
 
 cors_domains = getenv('CORS_DOMAINS', '')
 app.secret_key = getenv('SECRET_KEY', '')
 
-app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_USE_SIGNER'] = True
-
 Session(app)
 
 socketio = SocketIO(app, cors_allowed_origins=cors_domains,
