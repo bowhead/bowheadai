@@ -76,11 +76,11 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 
   app.post("/send-message", async (req, res) => {
     const message = req.body.message;
-    console.log("Mensaje recibido:", message);
+    const history = req.body.history;
 
     try {
       // Realizar cualquier procesamiento adicional con el mensaje
-      const result = await queryBQ(message);
+      const result = await queryBQ(message,history );
   
       // Enviar la respuesta "Hola mundo"
       res.json({ response: result });
