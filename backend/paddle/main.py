@@ -39,7 +39,8 @@ socketio = SocketIO(app, cors_allowed_origins=cors_domains,
 
 @socketio.on('connect')
 def handle_connect(sid):
-    session['sid'] = sid
+    session['sid'] = request.sid
+    print(request.sid, flush=True)
     emit('message', {'text': 'Connected'})
 
 @app.route('/upload', methods=['POST'])
