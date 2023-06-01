@@ -2,7 +2,7 @@ import { Box, Heading, Text, Image, Progress } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("https://apichat.bowheadhealth.io/");
+const socket = io("http://localhost:5000/upload");
 
 function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   const fileInputRef = useRef(null);
@@ -79,7 +79,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
 
     
     try {
-      const response = await fetch("https://apichat.bowheadhealth.io/upload", {
+      const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
       });

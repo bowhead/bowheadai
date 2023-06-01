@@ -10,13 +10,14 @@ function Chat({...props}) {
     if (inputValue.trim() !== "" ) {
         setMessages([...messages, "User: " + inputValue]);
         setInputValue("");
+        console.log(messages)
       try {
-        const response = await fetch("https://gptpi.bowheadhealth.io/send-message", {
+        const response = await fetch("http://localhost:3001/send-message", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: inputValue})
+          body: JSON.stringify({ message: inputValue, history: messages})
         });
 
         if (response.ok) {
