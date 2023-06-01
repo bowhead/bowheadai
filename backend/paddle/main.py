@@ -1,26 +1,48 @@
-from flask import Flask, request
+from flask import Flask, request, session
 from flask_cors import CORS
 from pdf2image import convert_from_path
 import os
+from os import getenv
 import cv2
 from paddleocr import PPStructure,draw_structure_result,save_structure_res, PaddleOCR
 import requests
 import shutil
 #from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit
+from flask_session import Session
+import redis
+from os import getenv
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
-#load_dotenv()
+load_dotenv()
 
 # Access the URL variables
 api_url = "https://gptpi.bowheadhealth.io/upload"
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+
+
+session_engine = 'redis'
+socketio_params = {}
+
+
+cors_domains = getenv('CORS_DOMAINS', '')
+app.secret_key = getenv('SECRET_KEY', '')
+
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_USE_SIGNER'] = True
+
+Session(app)
+
+socketio = SocketIO(app, cors_allowed_origins=cors_domains,
+                    cookie='AWSBPM')
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(sid):
+    session['sid'] = sid
     emit('message', {'text': 'Connected'})
 
 @app.route('/upload', methods=['POST'])
@@ -30,7 +52,7 @@ def upload_files():
     # Get the value of deleteOldFiles from the form data
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     
-    socketio.emit('progress', {'progress': 10})
+    socketio.emit('progress', {'progress': 10}, room = session.get('sid', ''))
     if delete_old_files:
         dir = 'temp/'
         if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
@@ -93,14 +115,14 @@ def upload_files():
             file.save("output/"+file.filename)
     
     print('INFO: Paddle Process')
-    socketio.emit('progress', {'progress': 33})      
+    socketio.emit('progress', {'progress': 33}, room = session.get('sid', ''))      
     paddle_process(old_files)
     
-    socketio.emit('progress', {'progress': 66})
+    socketio.emit('progress', {'progress': 66}, room = session.get('sid', ''))
     print('INFO: Create Vector')
     post_files()
     
-    socketio.emit('progress', {'progress': 100})
+    socketio.emit('progress', {'progress': 100}, room = session.get('sid', ''))
     
     return 'Files uploaded successfully'
 
