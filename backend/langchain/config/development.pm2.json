@@ -10,7 +10,7 @@
         ".git",
         "uploads",
         "node_modules",
-        "healthDAOVector"
+        "./src/healthDAOVector"
       ],
       "env": {
         "NODE_ENV": "development",
