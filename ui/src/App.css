@@ -7,3 +7,14 @@
 #filesContainer h3.chakra-heading {
   font-size: 1vw;
 }
+
+.user-msg {
+  width: 60%;
+  margin-left: auto;
+  background-color: white;
+}
+
+.system-msg {
+  width: 60%;
+  background-color: rgba(169, 203, 210, 0.16);
+}
