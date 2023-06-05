@@ -6,7 +6,7 @@ import fs from "fs";
 import dotenv from 'dotenv';
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
-
+import os from 'os';
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
 import {GetConfig} from "./src/helpers/leanConfig.js"
@@ -31,24 +31,30 @@ app.use(bodyParser.json());
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = join(__dirname, "uploads"); // Ruta donde se guardarán los archivos
+    console.log(os.userInfo());
 
+    
     // Crear la carpeta si no existe
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
   }
-    deleteFolderRecursively('uploads');
-
+   
+    
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const fileExtension = extname(file.originalname);
+    let files = fs.readdirSync("/api/uploads");
+    console.log(files);
     cb(null, file.originalname.split(".")[0] + "-" + uniqueSuffix + fileExtension);
   },
 });
 
 const deleteFolderRecursively = function (directory_path) {
     if (fs.existsSync(directory_path)) {
+      
+
         fs.readdirSync(directory_path).forEach(function (file, index) {
             var currentPath = join(directory_path, file);
             if (fs.lstatSync(currentPath).isDirectory()) {
@@ -69,6 +75,9 @@ app.post("/upload", upload.array("files"), async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
   //console.log(req.body.vectorName)
   //console.log(req.files);
+  let files = fs.readdirSync("/api/uploads");
+  console.log(files);
+  
   
   const result = await bqGenerate();
   res.json({ response: result });
