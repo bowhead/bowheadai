@@ -31,13 +31,14 @@ app.use(bodyParser.json());
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = join(__dirname, "uploads"); // Ruta donde se guardarán los archivos
-    console.log(os.userInfo());
+    
 
     
     // Crear la carpeta si no existe
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
   }
+    deleteFolderRecursively(uploadPath);
    
     
     cb(null, uploadPath);
@@ -45,8 +46,6 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const fileExtension = extname(file.originalname);
-    let files = fs.readdirSync("/api/uploads");
-    console.log(files);
     cb(null, file.originalname.split(".")[0] + "-" + uniqueSuffix + fileExtension);
   },
 });
@@ -75,11 +74,10 @@ app.post("/upload", upload.array("files"), async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
   //console.log(req.body.vectorName)
   //console.log(req.files);
-  let files = fs.readdirSync("/api/uploads");
-  console.log(files);
+  console.log(req.body.user_id);
   
   
-  const result = await bqGenerate();
+  const result = await bqGenerate(req.body.user_id);
   res.json({ response: result });
 });
 
