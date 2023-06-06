@@ -2,6 +2,8 @@ import { Box, Input, IconButton} from "@chakra-ui/react";
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 
+const sendMessageUrl = process.env.REACT_APP_SEND_MESSAGE_ENDPOINT;
+
 function Chat({userId,...props}) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
@@ -13,7 +15,7 @@ function Chat({userId,...props}) {
       setInputValue("");
       setLoadingResp(true);
       try {
-        const response = await fetch("http://localhost:3001/send-message", {
+        const response = await fetch(sendMessageUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

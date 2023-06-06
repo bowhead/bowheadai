@@ -26,7 +26,6 @@ export const queryBQ = async (query, history,userId) => {
   // Initialize the LLM to use to answer the question.
   const model = new OpenAI({ temperature: 0.8, maxTokens: 500 });
   const directory = "src/healthDAOVector/"+userId;
-  console.log(directory)
 
   // Load the vector store from the same directory
   const vectorStore = await HNSWLib.load(directory, new OpenAIEmbeddings());
