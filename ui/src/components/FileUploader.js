@@ -2,7 +2,10 @@ import { Box, Heading, Text, Image, Progress } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3000/");
+const apiKey = process.env.REACT_APP_SOCKET_URL;
+const uploadUrl = process.env.REACT_APP_UPLOAD_ENDPOINT;
+
+const socket = io(apiKey);
 
 function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   const fileInputRef = useRef(null);
@@ -80,7 +83,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
 
     
     try {
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch(uploadUrl, {
         method: "POST",
         body:formData
       });
