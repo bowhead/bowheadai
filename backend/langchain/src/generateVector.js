@@ -28,7 +28,7 @@ export const bqGenerate = async (user_id) => {
   });*/
 
 
-  const loader = new DirectoryLoader("uploads/",
+  const loader = new DirectoryLoader("uploads/"+user_id,
   {
     ".txt": (path) => new TextLoader(path),
     ".pdf": (path) => new PDFLoader(path),
