@@ -22,7 +22,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.config['SECRET_KEY'] = getenv('SECRET_KEY', 'dfasdfasd')
 app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
+#Session(app)
 
 socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False)
 
@@ -36,7 +36,7 @@ def upload_files():
     # Get the value of deleteOldFiles from the form data
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
 
-    socketio.emit('progress', {'progress': 10}, room = session.get('sid', ''))
+    socketio.emit('progress', {'progress': 10})
     
     user_id = request.form.get('userId', '')+"/"
 
@@ -121,14 +121,14 @@ def upload_files():
             file.save(output_path+file.filename)
     
     print('INFO: Paddle Process')
-    socketio.emit('progress', {'progress': 33}, room = session.get('sid', ''))      
+    socketio.emit('progress', {'progress': 33})      
     paddle_process(old_files, images_path, output_path)
     
-    socketio.emit('progress', {'progress': 66}, room = session.get('sid', ''))
+    socketio.emit('progress', {'progress': 66})
     print('INFO: Create Vector')
     post_files(output_path)
     
-    socketio.emit('progress', {'progress': 100}, room = session.get('sid', ''))
+    socketio.emit('progress', {'progress': 100})
     
     return 'Files uploaded successfully'
 
