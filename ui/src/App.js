@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {Flex, Box, ChakraProvider, extendTheme } from '@chakra-ui/react';
 import FileUploader from './components/FileUploader';
 import Chat from './components/Chat';
