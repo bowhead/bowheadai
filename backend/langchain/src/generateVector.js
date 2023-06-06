@@ -11,6 +11,19 @@ import { fileURLToPath } from "url";
 import fs from 'fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const createDirectoryIfNotExists = async (directory) => {
+  try {
+    await fs.promises.mkdir(directory);
+    console.log("Directory for vector created");
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      console.log("vector directory already exists");
+    } else {
+      console.error("Failed to create directory:", error);
+    }
+  }
+};
+
 export const bqGenerate = async (user_id) => {
   // Initialize the LLM to use to answer the question.
   // const text = fs.readFileSync("src/betterQuestDocs/lore_and_info_pros.txt", "utf8");
@@ -42,9 +55,8 @@ export const bqGenerate = async (user_id) => {
 
   // Crear la carpeta si no existe
   const directory = "src/healthDAOVector/"+user_id;
-  if (!fs.existsSync(directory)){
-    fs.mkdirSync(directory);
-  }
+  await createDirectoryIfNotExists(directory);
+
   // Save the vector store to a directory
   await vectorStore.save(directory);
 
