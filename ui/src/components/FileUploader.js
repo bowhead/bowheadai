@@ -4,7 +4,7 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:3000/");
 
-function FileUploader({ onFilesUploaded,deleteOldFiles, ...props }) {
+function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -73,7 +73,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles, ...props }) {
 
     const formData = new FormData();
     formData.append('deleteOldFiles', deleteOldFiles ? 'true' : 'false');
-
+    formData.append('userId', userId);
     files.forEach((file, index) => {
       formData.append('files', file);
     });
@@ -82,7 +82,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles, ...props }) {
     try {
       const response = await fetch("http://localhost:3000/upload", {
         method: "POST",
-        body: formData,
+        body:formData
       });
 
       if (response.ok) {

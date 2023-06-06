@@ -2,7 +2,7 @@ import { Box, Input, IconButton} from "@chakra-ui/react";
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 
-function Chat({...props}) {
+function Chat({userId,...props}) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [loadingResp, setLoadingResp] = useState(false);
@@ -18,7 +18,7 @@ function Chat({...props}) {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: inputValue, history: messages})
+          body: JSON.stringify({ message: inputValue, history: messages, userId:userId})
         });
 
         setLoadingResp(false);
