@@ -11,7 +11,7 @@ import { fileURLToPath } from "url";
 import fs from 'fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const bqGenerate = async () => {
+export const bqGenerate = async (user_id) => {
   // Initialize the LLM to use to answer the question.
   // const text = fs.readFileSync("src/betterQuestDocs/lore_and_info_pros.txt", "utf8");
   // const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 });
@@ -27,6 +27,7 @@ export const bqGenerate = async () => {
     });
   });*/
 
+
   const loader = new DirectoryLoader("uploads/",
   {
     ".txt": (path) => new TextLoader(path),
@@ -39,8 +40,12 @@ export const bqGenerate = async () => {
   // Create a vector store from the documents.
   const vectorStore = await HNSWLib.fromDocuments(docs, new OpenAIEmbeddings());
 
+  // Crear la carpeta si no existe
+  const directory = "src/healthDAOVector/"+user_id;
+  if (!fs.existsSync(directory)){
+    fs.mkdirSync(directory);
+  }
   // Save the vector store to a directory
-  const directory = "src/healthDAOVector/";
   await vectorStore.save(directory);
 
   console.log("Vector created");

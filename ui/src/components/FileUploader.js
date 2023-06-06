@@ -4,7 +4,7 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:3000/");
 
-function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
+function FileUploader({ onFilesUploaded,deleteOldFiles, ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);

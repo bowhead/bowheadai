@@ -43,7 +43,7 @@ function App() {
             {!filesUploaded && 
             <Box height="100%" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
               <p style={{color: 'black', marginBottom:"12px"}}>Upload any PDF, CSV, image or JSON and start chatting with your health data.</p>
-              <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={true} />
+              <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={true}/>
             </Box>
             }
             

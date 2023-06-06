@@ -174,11 +174,11 @@ def post_files(output_path):
         files.append(('files', (file_path, file_content, 'application/octet-stream')))
     
     # Add the ID to the files dictionary
-    #files.append(('text_data', output_path.split("/")[1]))
+    data = {'user_id':output_path.split("/")[1]}
 
     print('INFO: Langchain Process',flush=True)
     # Send the POST request
-    response = requests.post(api_url, files=files)
+    response = requests.post(api_url, files=files, data=data)
 
     # Print the response
     print(response.text)
