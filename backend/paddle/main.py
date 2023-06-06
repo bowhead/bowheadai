@@ -3,8 +3,7 @@ from flask_cors import CORS
 from pdf2image import convert_from_path
 import os
 from os import getenv
-import cv2
-from paddleocr import PPStructure,draw_structure_result,save_structure_res, PaddleOCR
+from paddleocr import PaddleOCR
 import requests
 import shutil
 #from dotenv import load_dotenv
@@ -12,21 +11,20 @@ from flask_socketio import SocketIO, emit
 from flask_session import Session
 from os import getenv
 from dotenv import load_dotenv
-import uuid
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Access the URL variables
-api_url = "http://langchain:3001/upload"
-
+api_url = getenv('LANGCHAIN_ENDPOINT')
+cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.config['SECRET_KEY'] = getenv('SECRET_KEY', 'dfasdfasd')
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
+socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False)
 
 @socketio.on('connect')
 def handle_connect():
@@ -35,19 +33,22 @@ def handle_connect():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_files():
-    
-    
     # Get the value of deleteOldFiles from the form data
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
 
     socketio.emit('progress', {'progress': 10}, room = session.get('sid', ''))
     
-    if delete_old_files:
-        user_id = str(uuid.uuid4())+"/"
-        # Crear una carpeta con el ID del usuario
-        temp_path = 'temp/' + user_id
-        images_path = 'images/' + user_id
-        output_path = 'output/' + user_id
+    user_id = request.form.get('userId', '')+"/"
+
+    if not os.path.exists('temp/'): os.makedirs('temp/')
+    if not os.path.exists('images/'): os.makedirs('images/')
+    if not os.path.exists('output/'): os.makedirs('output/')
+
+    # Crear una carpeta con el ID del usuario
+    temp_path = 'temp/' + user_id
+    images_path = 'images/' + user_id
+    output_path = 'output/' + user_id
+    if not os.path.exists(temp_path):
         os.makedirs(temp_path)
         os.makedirs(images_path)
         os.makedirs(output_path)
