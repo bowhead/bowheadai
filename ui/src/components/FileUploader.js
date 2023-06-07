@@ -5,7 +5,7 @@ import io from "socket.io-client";
 const apiKey = process.env.REACT_APP_SOCKET_URL;
 const uploadUrl = process.env.REACT_APP_UPLOAD_ENDPOINT;
 
-const socket = io(apiKey);
+
 
 function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   const fileInputRef = useRef(null);
@@ -15,6 +15,8 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   const [requestStatus, setRequestStatus] = useState('Drag and drop files here');
   const [requestError, setRequestError] = useState(false);
   
+  
+
   useEffect(() => {
     if (files.length > 0) {
       createVector();
@@ -46,6 +48,11 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   }
 
   useEffect(() => {
+    const socket = io(apiKey, {
+      extraHeaders: {
+        "uuid": userId
+      }
+    });
 
     socket.on("progress", (data) => {
       // Update the progress state when receiving 'progress' event from the server
