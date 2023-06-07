@@ -17,7 +17,8 @@ from pathvalidate import sanitize_filename
 load_dotenv()
 
 # Access the URL variables
-api_url = getenv('LANGCHAIN_ENDPOINT')
+api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
+delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -33,13 +34,18 @@ def handle_connect():
 
 @socketio.on('disconnect')
 def disconnect():
+    uuid = sanitize_filename(request.headers.get('uuid'))
     # Try to remove the tree; if it fails, throw an error using try...except.
     for folder in ["temp/","images/","output/"]:
-        dir = folder + sanitize_filename(request.headers.get('uuid'))+"/"
+        dir = folder + uuid + "/"
         try:
             shutil.rmtree(dir)
         except OSError as e:
             print("Error: %s - %s." % (e.filename, e.strerror))
+    data = {'user_id':uuid}    
+    response = requests.post(delete_url, data=data)
+    print(response.text,flush=True)
+
     
 
 

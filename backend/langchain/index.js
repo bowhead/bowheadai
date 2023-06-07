@@ -36,9 +36,7 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
   }
-    deleteFolderRecursively(uploadPath);
-   
-    
+  deleteFolderRecursively(uploadPath)
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -48,21 +46,21 @@ const storage = multer.diskStorage({
   },
 });
 
+
 const deleteFolderRecursively = function (directory_path) {
-    if (fs.existsSync(directory_path)) {
-      
+  if (fs.existsSync(directory_path)) {
+    
 
-        fs.readdirSync(directory_path).forEach(function (file, index) {
-            var currentPath = join(directory_path, file);
-            if (fs.lstatSync(currentPath).isDirectory()) {
-              deleteFolderRecursively(currentPath);
-            } else {
-                fs.unlinkSync(currentPath); // delete file
-            }
-        });
-    }
+      fs.readdirSync(directory_path).forEach(function (file, index) {
+          var currentPath = join(directory_path, file);
+          if (fs.lstatSync(currentPath).isDirectory()) {
+            deleteFolderRecursively(currentPath);
+          } else {
+              fs.unlinkSync(currentPath); // delete file
+          }
+      });
+  }
 };
-
 
 // Configurar multer con la opción de almacenamiento
 const upload = multer({ storage });
@@ -78,23 +76,39 @@ app.post("/upload", upload.array("files"), async (req, res) => {
   res.json({ response: result });
 });
 
-  app.post("/send-message", async (req, res) => {
-    const message = req.body.message;
-    const history = req.body.history;
-    const userId = req.body.userId;
-
-    try {
-      // Realizar cualquier procesamiento adicional con el mensaje
-      const result = await queryBQ(message,history,userId );
+app.post("/delete", async (req, res) => {
+  // Aquí puedes realizar cualquier acción adicional con los archivos cargados
+  //console.log(req.body.vectorName)
+  //console.log(req.files);
+  const deletePath = join(__dirname, "uploads",req.body.user_id);
   
-      // Enviar la respuesta "Hola mundo"
-      res.json({ response: result });
-    } catch (error) {
-      // Manejar errores si ocurre alguno
-      console.error("Error al procesar el mensaje:", error);
-      res.status(500).json({ error: "Error en el servidor" });
-    }
-  });
+  if (fs.existsSync(deletePath)){
+    fs.rmSync(deletePath, { recursive: true, force: true });
+    res.json({ response: "Delete suscesfully" });
+  }else{
+    res.json({ response: "Folder doesnt exist" });
+  }
+
+  
+});
+
+app.post("/send-message", async (req, res) => {
+  const message = req.body.message;
+  const history = req.body.history;
+  const userId = req.body.userId;
+
+  try {
+    // Realizar cualquier procesamiento adicional con el mensaje
+    const result = await queryBQ(message,history,userId );
+  
+    // Enviar la respuesta "Hola mundo"
+    res.json({ response: result });
+  } catch (error) {
+    // Manejar errores si ocurre alguno
+    console.error("Error al procesar el mensaje:", error);
+    res.status(500).json({ error: "Error en el servidor" });
+  }
+});
 
 // Manejo de errores
 app.use((err, req, res, next) => {
