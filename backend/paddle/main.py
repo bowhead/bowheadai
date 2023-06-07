@@ -11,6 +11,7 @@ from flask_socketio import SocketIO, emit
 from flask_session import Session
 from os import getenv
 from dotenv import load_dotenv
+from pathvalidate import sanitize_filename
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,7 +21,7 @@ api_url = getenv('LANGCHAIN_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-app.config['SECRET_KEY'] = getenv('SECRET_KEY', 'dfasdfasd')
+app.config['SECRET_KEY'] = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
 #Session(app)
 
@@ -38,7 +39,7 @@ def upload_files():
 
     socketio.emit('progress', {'progress': 10})
     
-    user_id = request.form.get('userId', '')+"/"
+    user_id = sanitize_filename(request.form.get('userId', ''))+"/"
 
     if not os.path.exists('temp/'): os.makedirs('temp/')
     if not os.path.exists('images/'): os.makedirs('images/')
