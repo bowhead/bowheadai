@@ -30,7 +30,18 @@ socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False
 @socketio.on('connect')
 def handle_connect():
     emit('message', {'text': 'Connected'})
+
+@socketio.on('disconnect')
+def disconnect():
+    # Try to remove the tree; if it fails, throw an error using try...except.
+    for folder in ["temp/","images/","output/"]:
+        dir = folder + sanitize_filename(request.headers.get('uuid'))+"/"
+        try:
+            shutil.rmtree(dir)
+        except OSError as e:
+            print("Error: %s - %s." % (e.filename, e.strerror))
     
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_files():
