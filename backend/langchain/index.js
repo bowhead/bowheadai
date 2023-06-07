@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = join(__dirname, "uploads",req.body.user_id); // Ruta donde se guardarán los archivos
-    
+    console.log(uploadPath)
     // Crear la carpeta si no existe
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
@@ -72,6 +72,7 @@ app.post("/upload", upload.array("files"), async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
   //console.log(req.body.vectorName)
   //console.log(req.files);
+  console.log(req.body.user_id)
   
   const result = await bqGenerate(req.body.user_id);
   res.json({ response: result });
