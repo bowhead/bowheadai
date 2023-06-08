@@ -46,8 +46,6 @@ def disconnect():
     response = requests.post(delete_url, data=data)
     print(response.text,flush=True)
 
-    
-
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_files():
@@ -71,38 +69,6 @@ def upload_files():
         os.makedirs(images_path)
         os.makedirs(output_path)
 
-        
-    
-    
-    
-
-    """
-    if delete_old_files:
-        dir = 'temp/'
-        if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))
-
-        
-        dir = 'images/'
-        if not os.path.exists(dir): os.makedirs(dir)
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))
-        
-
-        dir = 'output/'
-        if not os.path.exists(dir): os.makedirs(dir)
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))"""
     
     # Check if files were sent
     if 'files' not in request.files:
@@ -159,8 +125,6 @@ def paddle_process(old_files, images_path, output_path):
     #table_engine = PPStructure(show_log=False)
     
     files = os.listdir(images_path)
-
-   
     
     ocr = PaddleOCR(show_log=False)
     for file in files:
