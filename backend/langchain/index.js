@@ -80,14 +80,28 @@ app.post("/delete", async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
   //console.log(req.body.vectorName)
   //console.log(req.files);
-  const deletePath = join(__dirname, "uploads",req.body.user_id);
-  
-  if (fs.existsSync(deletePath)){
-    fs.rmSync(deletePath, { recursive: true, force: true });
-    res.json({ response: "Delete suscesfully" });
+  const uuid = req.body.user_id
+  if (uuid){
+    const uploadsPath = join(__dirname, "uploads",uuid);
+    const vectorPath = join(__dirname, "src","healthDAOVector",uuid);
+    
+    if (fs.existsSync(uploadsPath)){
+      fs.rmSync(uploadsPath, { recursive: true, force: true });
+    }
+
+    if (fs.existsSync(vectorPath)){
+      fs.rmSync(vectorPath, { recursive: true, force: true });
+      res.json({ response: "Vector delete suscesfully" });
+    }
   }else{
-    res.json({ response: "Folder doesnt exist" });
+    res.json({ response: "Folders doesnt exist" });
   }
+
+  
+
+  
+
+  
 
   
 });
