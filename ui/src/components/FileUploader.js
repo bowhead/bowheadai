@@ -2,9 +2,12 @@ import { Box, Heading, Text, Image, Progress } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("https://apichat.bowheadhealth.io/");
+const apiKey = process.env.REACT_APP_SOCKET_URL;
+const uploadUrl = process.env.REACT_APP_UPLOAD_ENDPOINT;
 
-function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
+const socket = io(apiKey);
+
+function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -43,6 +46,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
   }
 
   useEffect(() => {
+
     socket.on("progress", (data) => {
       // Update the progress state when receiving 'progress' event from the server
       setProgress(data.progress);
@@ -72,16 +76,16 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,  ...props }) {
 
     const formData = new FormData();
     formData.append('deleteOldFiles', deleteOldFiles ? 'true' : 'false');
-
+    formData.append('userId', userId);
     files.forEach((file, index) => {
       formData.append('files', file);
     });
 
     
     try {
-      const response = await fetch("https://apichat.bowheadhealth.io/upload", {
+      const response = await fetch(uploadUrl, {
         method: "POST",
-        body: formData,
+        body:formData
       });
 
       if (response.ok) {

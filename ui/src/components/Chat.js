@@ -2,7 +2,9 @@ import { Box, Input, IconButton} from "@chakra-ui/react";
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 
-function Chat({...props}) {
+const sendMessageUrl = process.env.REACT_APP_SEND_MESSAGE_ENDPOINT;
+
+function Chat({userId,...props}) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [loadingResp, setLoadingResp] = useState(false);
@@ -13,12 +15,12 @@ function Chat({...props}) {
       setInputValue("");
       setLoadingResp(true);
       try {
-        const response = await fetch("https://gptpi.bowheadhealth.io/send-message", {
+        const response = await fetch(sendMessageUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: inputValue, history: messages})
+          body: JSON.stringify({ message: inputValue, history: messages, userId:userId})
         });
 
         setLoadingResp(false);

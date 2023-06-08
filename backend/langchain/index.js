@@ -6,7 +6,7 @@ import fs from "fs";
 import dotenv from 'dotenv';
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
-
+import os from 'os';
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
 import {GetConfig} from "./src/helpers/leanConfig.js"
@@ -30,14 +30,15 @@ app.use(bodyParser.json());
 // Configurar multer para guardar los archivos en una carpeta específica
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = join(__dirname, "uploads"); // Ruta donde se guardarán los archivos
-
+    const uploadPath = join(__dirname, "uploads",req.body.user_id); // Ruta donde se guardarán los archivos
+    
     // Crear la carpeta si no existe
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
   }
-    deleteFolderRecursively('uploads');
-
+    deleteFolderRecursively(uploadPath);
+   
+    
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -49,6 +50,8 @@ const storage = multer.diskStorage({
 
 const deleteFolderRecursively = function (directory_path) {
     if (fs.existsSync(directory_path)) {
+      
+
         fs.readdirSync(directory_path).forEach(function (file, index) {
             var currentPath = join(directory_path, file);
             if (fs.lstatSync(currentPath).isDirectory()) {
@@ -70,17 +73,19 @@ app.post("/upload", upload.array("files"), async (req, res) => {
   //console.log(req.body.vectorName)
   //console.log(req.files);
   
-  const result = await bqGenerate();
+  
+  const result = await bqGenerate(req.body.user_id);
   res.json({ response: result });
 });
 
   app.post("/send-message", async (req, res) => {
     const message = req.body.message;
     const history = req.body.history;
+    const userId = req.body.userId;
 
     try {
       // Realizar cualquier procesamiento adicional con el mensaje
-      const result = await queryBQ(message,history );
+      const result = await queryBQ(message,history,userId );
   
       // Enviar la respuesta "Hola mundo"
       res.json({ response: result });
