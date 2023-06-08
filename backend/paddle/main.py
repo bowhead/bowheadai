@@ -40,8 +40,10 @@ def disconnect():
         dir = folder + uuid + "/"
         try:
             shutil.rmtree(dir)
+            print(f"INFO: folder {folder} delete suscesfully")
         except OSError as e:
-            print("Error: %s - %s." % (e.filename, e.strerror))
+            pass
+            #print("Error: %s - %s." % (e.filename, e.strerror))
     data = {'user_id':uuid}    
     response = requests.post(delete_url, data=data)
     print(response.text,flush=True)
