@@ -10,6 +10,7 @@ import os from 'os';
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
 import {GetConfig} from "./src/helpers/leanConfig.js"
+import filenamify from 'filenamify';
 
 dotenv.config()
 
@@ -68,9 +69,6 @@ const upload = multer({ storage });
 // Ruta para manejar la carga de archivos
 app.post("/upload", upload.array("files"), async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
-  //console.log(req.body.vectorName)
-  //console.log(req.files);
-  
   
   const result = await bqGenerate(req.body.user_id);
   res.json({ response: result });
@@ -96,20 +94,14 @@ app.post("/delete", async (req, res) => {
   }else{
     res.json({ response: "Folders doesnt exist" });
   }
-
-  
-
-  
-
-  
-
   
 });
 
 app.post("/send-message", async (req, res) => {
   const message = req.body.message;
   const history = req.body.history;
-  const userId = req.body.userId;
+  const userId = filenamify(req.body.userId, {replacement: ''});
+  console.log(userId)
 
   try {
     // Realizar cualquier procesamiento adicional con el mensaje
