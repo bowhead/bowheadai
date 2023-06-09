@@ -74,7 +74,7 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 });
 
 app.post("/delete", async (req, res) => {
-  const uuid = req.body.user_id
+  const uuid = filenamify(req.body.user_id, {replacement: ''});
   if (uuid){
     const uploadsPath = join(__dirname, "uploads",uuid);
     const vectorPath = join(__dirname, "src","healthDAOVector",uuid);
