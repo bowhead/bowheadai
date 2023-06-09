@@ -17,7 +17,8 @@ from pathvalidate import sanitize_filename
 load_dotenv()
 
 # Access the URL variables
-api_url = getenv('LANGCHAIN_ENDPOINT')
+api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
+delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -30,7 +31,23 @@ socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False
 @socketio.on('connect')
 def handle_connect():
     emit('message', {'text': 'Connected'})
-    
+
+@socketio.on('disconnect')
+def disconnect():
+    uuid = sanitize_filename(request.headers.get('uuid'))
+    # Try to remove the tree; if it fails, throw an error using try...except.
+    for folder in ["temp/","images/","output/"]:
+        dir = folder + uuid + "/"
+        try:
+            shutil.rmtree(dir)
+            print(f"INFO: folder {folder} delete suscesfully")
+        except OSError as e:
+            pass
+            #print("Error: %s - %s." % (e.filename, e.strerror))
+    data = {'user_id':uuid}    
+    response = requests.post(delete_url, data=data)
+    print(response.text,flush=True)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_files():
@@ -54,38 +71,6 @@ def upload_files():
         os.makedirs(images_path)
         os.makedirs(output_path)
 
-        
-    
-    
-    
-
-    """
-    if delete_old_files:
-        dir = 'temp/'
-        if not os.path.exists(dir): os.makedirs(dir)# Create a new directory because it does not exist
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))
-
-        
-        dir = 'images/'
-        if not os.path.exists(dir): os.makedirs(dir)
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))
-        
-
-        dir = 'output/'
-        if not os.path.exists(dir): os.makedirs(dir)
-        for f in os.listdir(dir):
-            if os.path.isfile(os.path.join(dir, f)):
-                os.remove(os.path.join(dir, f))
-            else:
-                shutil.rmtree(os.path.join(dir, f))"""
     
     # Check if files were sent
     if 'files' not in request.files:
@@ -142,8 +127,6 @@ def paddle_process(old_files, images_path, output_path):
     #table_engine = PPStructure(show_log=False)
     
     files = os.listdir(images_path)
-
-   
     
     ocr = PaddleOCR(show_log=False)
     for file in files:
