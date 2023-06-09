@@ -6,7 +6,6 @@ import fs from "fs";
 import dotenv from 'dotenv';
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
-import os from 'os';
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
 import {GetConfig} from "./src/helpers/leanConfig.js"
@@ -75,9 +74,6 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 });
 
 app.post("/delete", async (req, res) => {
-  // Aquí puedes realizar cualquier acción adicional con los archivos cargados
-  //console.log(req.body.vectorName)
-  //console.log(req.files);
   const uuid = req.body.user_id
   if (uuid){
     const uploadsPath = join(__dirname, "uploads",uuid);
@@ -106,7 +102,6 @@ app.post("/send-message", async (req, res) => {
     // Realizar cualquier procesamiento adicional con el mensaje
     const result = await queryBQ(message,history,userId );
   
-    // Enviar la respuesta "Hola mundo"
     res.json({ response: result });
   } catch (error) {
     // Manejar errores si ocurre alguno

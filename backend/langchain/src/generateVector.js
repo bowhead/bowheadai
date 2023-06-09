@@ -26,20 +26,6 @@ const createDirectoryIfNotExists = async (directory) => {
 
 export const bqGenerate = async (user_id) => {
   // Initialize the LLM to use to answer the question.
-  // const text = fs.readFileSync("src/betterQuestDocs/lore_and_info_pros.txt", "utf8");
-  // const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 });
-  // const docs = await textSplitter.createDocuments([text]);
-
-  /*const imgPdfsFolder = 'src/healthDAODocs/unstructure/files/';
-  const imgFolder = 'src/healthDAODocs/unstructure/images/';
-  fs.readdir(imgFolder, (err, files) => {
-    files.forEach(file => {
-      console.log(file)
-      extractText(file);
-    
-    });
-  });*/
-
 
   const loader = new DirectoryLoader("uploads/"+user_id,
   {
