@@ -6,10 +6,10 @@ import fs from "fs";
 import dotenv from 'dotenv';
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
-import os from 'os';
 import { bqGenerate } from "./src/generateVector.js";
 import { queryBQ } from "./src/healthDAOChat.js";
 import {GetConfig} from "./src/helpers/leanConfig.js"
+import filenamify from 'filenamify';
 
 dotenv.config()
 
@@ -36,9 +36,7 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(uploadPath)){
       fs.mkdirSync(uploadPath);
   }
-    deleteFolderRecursively(uploadPath);
-   
-    
+  deleteFolderRecursively(uploadPath)
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -48,21 +46,21 @@ const storage = multer.diskStorage({
   },
 });
 
+
 const deleteFolderRecursively = function (directory_path) {
-    if (fs.existsSync(directory_path)) {
-      
+  if (fs.existsSync(directory_path)) {
+    
 
-        fs.readdirSync(directory_path).forEach(function (file, index) {
-            var currentPath = join(directory_path, file);
-            if (fs.lstatSync(currentPath).isDirectory()) {
-              deleteFolderRecursively(currentPath);
-            } else {
-                fs.unlinkSync(currentPath); // delete file
-            }
-        });
-    }
+      fs.readdirSync(directory_path).forEach(function (file, index) {
+          var currentPath = join(directory_path, file);
+          if (fs.lstatSync(currentPath).isDirectory()) {
+            deleteFolderRecursively(currentPath);
+          } else {
+              fs.unlinkSync(currentPath); // delete file
+          }
+      });
+  }
 };
-
 
 // Configurar multer con la opción de almacenamiento
 const upload = multer({ storage });
@@ -70,31 +68,47 @@ const upload = multer({ storage });
 // Ruta para manejar la carga de archivos
 app.post("/upload", upload.array("files"), async (req, res) => {
   // Aquí puedes realizar cualquier acción adicional con los archivos cargados
-  //console.log(req.body.vectorName)
-  //console.log(req.files);
-  
   
   const result = await bqGenerate(req.body.user_id);
   res.json({ response: result });
 });
 
-  app.post("/send-message", async (req, res) => {
-    const message = req.body.message;
-    const history = req.body.history;
-    const userId = req.body.userId;
-
-    try {
-      // Realizar cualquier procesamiento adicional con el mensaje
-      const result = await queryBQ(message,history,userId );
-  
-      // Enviar la respuesta "Hola mundo"
-      res.json({ response: result });
-    } catch (error) {
-      // Manejar errores si ocurre alguno
-      console.error("Error al procesar el mensaje:", error);
-      res.status(500).json({ error: "Error en el servidor" });
+app.post("/delete", async (req, res) => {
+  const uuid = filenamify(req.body.user_id, {replacement: ''});
+  if (uuid){
+    const uploadsPath = join(__dirname, "uploads",uuid);
+    const vectorPath = join(__dirname, "src","healthDAOVector",uuid);
+    
+    if (fs.existsSync(uploadsPath)){
+      fs.rmSync(uploadsPath, { recursive: true, force: true });
     }
-  });
+
+    if (fs.existsSync(vectorPath)){
+      fs.rmSync(vectorPath, { recursive: true, force: true });
+      res.json({ response: "Vector delete suscesfully" });
+    }
+  }else{
+    res.json({ response: "Folders doesnt exist" });
+  }
+  
+});
+
+app.post("/send-message", async (req, res) => {
+  const message = req.body.message;
+  const history = req.body.history;
+  const userId = filenamify(req.body.userId, {replacement: ''});
+
+  try {
+    // Realizar cualquier procesamiento adicional con el mensaje
+    const result = await queryBQ(message,history,userId );
+  
+    res.json({ response: result });
+  } catch (error) {
+    // Manejar errores si ocurre alguno
+    console.error("Error al procesar el mensaje:", error);
+    res.status(500).json({ error: "Error en el servidor" });
+  }
+});
 
 // Manejo de errores
 app.use((err, req, res, next) => {
