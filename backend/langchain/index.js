@@ -101,7 +101,6 @@ app.post("/send-message", async (req, res) => {
   const message = req.body.message;
   const history = req.body.history;
   const userId = filenamify(req.body.userId, {replacement: ''});
-  console.log(userId)
 
   try {
     // Realizar cualquier procesamiento adicional con el mensaje
