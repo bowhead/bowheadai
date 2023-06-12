@@ -92,6 +92,7 @@ def login():
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
+    session['message'] = 'Processing files'
     
     user_id = sanitize_filename(request.form.get('userId', ''))+"/"
 
@@ -135,21 +136,24 @@ def upload_files():
             file.save(output_path+file.filename)
             
     print('INFO: PyPDF Process')
-    session['progress'] = 33    
+    session['progress'] = 33
+    session['message'] = 'Extracting key information'
     pypdf_process(old_files, images_path, output_path, temp_path)
     
     session['progress'] = 66
+    session['message'] = 'Training model'
     print('INFO: Create Vector')
     post_files(output_path)
     
     session['progress'] = 100
     
+    session['message'] = 'All done!'
     return 'Files uploaded successfully'
 
 
 @app.route('/progress')
 def progress():
-    return jsonify(session.get('progress', 0))
+    return jsonify({'progress': session.get('progress', 0), 'message': session.get('message', '')})
 
 
 def get_file_names(dir):
