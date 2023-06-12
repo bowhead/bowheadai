@@ -53,27 +53,42 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
         "uuid": userId
       }
     });
+    if (!uploading) return;
+  
+    // check the upload progress using the /progress endpoint and a fetch call
+    const checkProgress = async () => {
+      try {
+        const response = await fetch(apiKey + '/progress', {
+          method: "GET",
+          mode: "cors",
+          credentials: 'include',
+        });
 
-    socket.on("progress", (data) => {
-      // Update the progress state when receiving 'progress' event from the server
-      setProgress(data.progress);
-      if (data.progress===33)setRequestStatus('Processing files...')
-      if (data.progress===66)setRequestStatus('Creating vector...')
-      if (data.progress===100)setRequestStatus('Complete...')
+        if (response.ok) {
+          const data = await response.json();
+          setProgress(data.progress);
+          setRequestStatus(data.message);
 
-      console.log(data.progress)
-    });
+          return data.progress;
+        } else {
+          console.error("Failed to get progress.");
+        }
+      } catch (error) {
+        console.error("Error occurred while getting progress:", error);
+      }
+    }
 
-    socket.on("message", (data) => {
-      // Update the progress state when receiving 'progress' event from the server
-      console.log(data.text)
-    });
+    function progressIterator() {
+      checkProgress().then((progress) => {
+        if (progress === 100) return;
 
-    return () => {
-      console.log("off")
-      socket.off("progress"); // Clean up the event listener when the component unmounts
-    };
-  }, []);
+        progressIterator();
+      });
+    }
+
+    progressIterator();
+
+  }, [uploading]);
 
   async function createVector() {
     if (files.length === 0) {
@@ -92,7 +107,9 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
     try {
       const response = await fetch(uploadUrl, {
         method: "POST",
-        body:formData
+        body:formData,
+        mode: "cors",
+        credentials: 'include',
       });
 
       if (response.ok) {

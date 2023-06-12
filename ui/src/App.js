@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import {Flex, Box, ChakraProvider, extendTheme } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Flex, Box, ChakraProvider, extendTheme, Spinner } from '@chakra-ui/react';
 import FileUploader from './components/FileUploader';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
@@ -17,6 +17,7 @@ function App() {
   const [filesUploaded, setFilesUploaded] = useState(false);
   const [filesList, setFilesList] = useState([]);
   const [userId, setUserId] = useState(uuidv4());
+  const [logged, setLogged] = useState(false);
 
   const handleFilesUploaded = (files) => {
     setFilesUploaded(true);
@@ -33,10 +34,28 @@ function App() {
     });
   }
 
+  useEffect(() => {
+    // create async function
+    const fetchData = async () => {
+      return await fetch(process.env.REACT_APP_SOCKET_URL + '/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        mode: "cors",
+        credentials: 'include',
+        body: JSON.stringify({ uuid: userId })
+      }) 
+    }
+
+    fetchData().then(() => setLogged(true))
+  }, []);
 
 
   return (
     <ChakraProvider theme={daoTheme}>
+      {
+      logged? (
       <Flex color="white" alignItems="stretch" height="100%">
         {filesUploaded && <Box width="20%" height="100%" bgColor="white" id='filesContainer'>
           <Sidebar fileList={filesList} removeFile={handleFileRemoval}/>
@@ -57,6 +76,15 @@ function App() {
           
         </Box>
       </Flex>
+      )
+      :
+      (
+        // display a chakra spinner
+        <Flex height="100%" alignItems="center" justifyContent="center">
+          <Spinner size='xl' />
+        </Flex>
+      )
+      }
     </ChakraProvider>
   );
 }
