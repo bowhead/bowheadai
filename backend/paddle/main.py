@@ -97,24 +97,9 @@ def upload_files():
         filename = file.filename.split(".")
         if filename[1] =='pdf':
             file.save(temp_path + file.filename)
-            
-            
-            '''# Convert PDF to images
-            images = convert_from_path(temp_path+file.filename)
-            
-            # Save each image
-            for i, image in enumerate(images):
-                image_name = f"{filename[0]}_{i}.jpg"
-                image.save(images_path + image_name)
-                # You can perform additional operations on the image here
-                
-                # Remove the original PDF file
+
         else:
             file.save(output_path+file.filename)
-    
-    print('INFO: Paddle Process')
-    socketio.emit('progress', {'progress': 33})      
-    paddle_process(old_files, images_path, output_path)'''
             
     print('INFO: PyPDF Process')
     socketio.emit('progress', {'progress': 33})      
@@ -135,7 +120,6 @@ def get_file_names(dir):
 
 def pypdf_process(old_files, images_path, output_path, temp_path):
     files = os.listdir(temp_path)
-    print(files)
 
     for file in files:
         if file in old_files:
@@ -150,23 +134,27 @@ def pypdf_process(old_files, images_path, output_path, temp_path):
         text_list = []
         count = 0
         images_text = []
+
+        #Get images and text for every page
         for page_num in range(pages):
             page = reader.pages[page_num]
             text_list.append(page.extract_text())
 
-
+            #Get images in page
             for image_file_object in page.images:
                 with open(images_path + str(page_num) + "_" + file.split(".")[0] + "_" + str(count) + "_" + image_file_object.name, "wb") as fp:
                     fp.write(image_file_object.data)
                 images_text.append(pytesseract.image_to_string(Image.open(images_path + str(page_num) + "_" + file.split(".")[0] + "_" + str(count) + "_" + image_file_object.name)))
                 count += 1
 
+        #Save text in txt
         if images_text:
             with open(f'{output_path}image_{file.split(".")[0]}.txt', 'w') as f:
                 for line in images_text:
                     clean_line = line.replace("\n\n","\n")
                     f.write(f'{clean_line}\n\n')
 
+        #Save text from pdf
         with open(f'{output_path}{file.split(".")[0]}.txt', 'w') as f:
             for line in text_list:
                 f.write(f"{line}\n")

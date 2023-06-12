@@ -5,7 +5,7 @@ WORKDIR /api
 COPY requirements.txt .
 COPY main.py .
 
-RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 poppler-utils
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 poppler-utils tesseract-ocr
 
 RUN pip install -r requirements.txt
 
