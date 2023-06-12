@@ -67,6 +67,7 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
         if (response.ok) {
           const data = await response.json();
           setProgress(data.progress);
+          setRequestStatus(data.message);
 
           return data.progress;
         } else {
@@ -84,6 +85,8 @@ function FileUploader({ onFilesUploaded,deleteOldFiles,userId, ...props }) {
         progressIterator();
       });
     }
+
+    progressIterator();
 
   }, [uploading]);
 
