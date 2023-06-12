@@ -1,9 +1,7 @@
 from flask import Flask, request, session
 from flask_cors import CORS
-from pdf2image import convert_from_path
 import os
 from os import getenv
-from paddleocr import PaddleOCR
 import requests
 import shutil
 #from dotenv import load_dotenv
@@ -12,6 +10,12 @@ from flask_session import Session
 from os import getenv
 from dotenv import load_dotenv
 from pathvalidate import sanitize_filename
+
+from pypdf import PdfReader
+import os
+from PIL import Image
+import pytesseract
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -93,22 +97,13 @@ def upload_files():
         filename = file.filename.split(".")
         if filename[1] =='pdf':
             file.save(temp_path + file.filename)
-            # Convert PDF to images
-            images = convert_from_path(temp_path+file.filename)
-            
-            # Save each image
-            for i, image in enumerate(images):
-                image_name = f"{filename[0]}_{i}.jpg"
-                image.save(images_path + image_name)
-                # You can perform additional operations on the image here
-                
-                # Remove the original PDF file
+
         else:
             file.save(output_path+file.filename)
-    
-    print('INFO: Paddle Process')
+            
+    print('INFO: PyPDF Process')
     socketio.emit('progress', {'progress': 33})      
-    paddle_process(old_files, images_path, output_path)
+    pypdf_process(old_files, images_path, output_path, temp_path)
     
     socketio.emit('progress', {'progress': 66})
     print('INFO: Create Vector')
@@ -123,27 +118,45 @@ def get_file_names(dir):
         return [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
     return []
 
-def paddle_process(old_files, images_path, output_path):
-    #table_engine = PPStructure(show_log=False)
-    
-    files = os.listdir(images_path)
-    
-    ocr = PaddleOCR(show_log=False)
+def pypdf_process(old_files, images_path, output_path, temp_path):
+    files = os.listdir(temp_path)
+
     for file in files:
         if file in old_files:
             print(f'INFO: Skipping image {file}, already processed')
             continue
-        print('INFO: Paddle Process ' + file)
+        print('INFO: Pypdf Process ' + file)
 
-        img_path = images_path + file
-        #result = table_engine(img)
-        result = ocr.ocr(img_path)
-        #print(os.path.basename(img_path).split('.')[0])
-        #save_structure_res(result, save_folder,os.path.basename(img_path).split('.')[0])
-        txts = [line[1][0] for line in result[0]]
         
+        reader = PdfReader(temp_path+file)
+        pages = len(reader.pages)
+
+        text_list = []
+        count = 0
+        images_text = []
+
+        #Get images and text for every page
+        for page_num in range(pages):
+            page = reader.pages[page_num]
+            text_list.append(page.extract_text())
+
+            #Get images in page
+            for image_file_object in page.images:
+                with open(images_path + str(page_num) + "_" + file.split(".")[0] + "_" + str(count) + "_" + image_file_object.name, "wb") as fp:
+                    fp.write(image_file_object.data)
+                images_text.append(pytesseract.image_to_string(Image.open(images_path + str(page_num) + "_" + file.split(".")[0] + "_" + str(count) + "_" + image_file_object.name)))
+                count += 1
+
+        #Save text in txt
+        if images_text:
+            with open(f'{output_path}image_{file.split(".")[0]}.txt', 'w') as f:
+                for line in images_text:
+                    clean_line = line.replace("\n\n","\n")
+                    f.write(f'{clean_line}\n\n')
+
+        #Save text from pdf
         with open(f'{output_path}{file.split(".")[0]}.txt', 'w') as f:
-            for line in txts:
+            for line in text_list:
                 f.write(f"{line}\n")
 
 def post_files(output_path):
