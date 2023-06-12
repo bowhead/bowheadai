@@ -18,3 +18,4 @@ pathvalidate==3.0.0
 pytesseract==0.3.10
 pypdf==3.9.1
 pypdf[image]
+requests==2.31.*
