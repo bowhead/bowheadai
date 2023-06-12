@@ -1,12 +1,13 @@
-from flask import Flask, request, session
+from functools import wraps
+from flask import Flask, request, session, jsonify
 from flask_cors import CORS
 import os
 from os import getenv
 import requests
 import shutil
-#from dotenv import load_dotenv
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, disconnect
 from flask_session import Session
+from flask_login import login_user, current_user, LoginManager, login_required
 from os import getenv
 from dotenv import load_dotenv
 from pathvalidate import sanitize_filename
@@ -16,6 +17,7 @@ import os
 from PIL import Image
 import pytesseract
 
+from models.User import User
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,12 +27,27 @@ api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
-app.config['SECRET_KEY'] = getenv('SECRET_KEY', '')
+app.secret_key = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
-#Session(app)
+
+CORS(app, supports_credentials=True)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+Session(app)
 
 socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False)
+
+
+def authenticated_only(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped
+
 
 @socketio.on('connect')
 def handle_connect():
@@ -51,14 +68,31 @@ def disconnect():
     data = {'user_id':uuid}    
     response = requests.post(delete_url, data=data)
     print(response.text,flush=True)
+   
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User(user_id)
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    if request.cookies.get('session'):
+        return jsonify({'status': 200}), 200
+
+    session['foo'] = 'barbar'
+    uuid = request.json.get('uuid')
+    user = User(uuid)
+    login_user(user, remember=True, force=True)
+    return jsonify({'status': 200, 'userId': uuid}), 200
 
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload_files():
-    # Get the value of deleteOldFiles from the form data
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
-
-    socketio.emit('progress', {'progress': 10})
+    session['progress'] = 10
+    session['message'] = 'Processing files'
     
     user_id = sanitize_filename(request.form.get('userId', ''))+"/"
 
@@ -102,16 +136,25 @@ def upload_files():
             file.save(output_path+file.filename)
             
     print('INFO: PyPDF Process')
-    socketio.emit('progress', {'progress': 33})      
+    session['progress'] = 33
+    session['message'] = 'Extracting key information'
     pypdf_process(old_files, images_path, output_path, temp_path)
     
-    socketio.emit('progress', {'progress': 66})
+    session['progress'] = 66
+    session['message'] = 'Training model'
     print('INFO: Create Vector')
     post_files(output_path)
     
-    socketio.emit('progress', {'progress': 100})
+    session['progress'] = 100
     
+    session['message'] = 'All done!'
     return 'Files uploaded successfully'
+
+
+@app.route('/progress')
+def progress():
+    return jsonify({'progress': session.get('progress', 0), 'message': session.get('message', '')})
+
 
 def get_file_names(dir):
     if os.path.exists(dir):
