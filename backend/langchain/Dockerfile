@@ -9,7 +9,7 @@ USER node
 
 FROM base AS user-other
 ARG USER_ID
-RUN adduser -D --uid $USER_ID --shell /bin/bash api && mkdir -p /api && chown hipaa:hipaa /api
+RUN adduser -D --uid $USER_ID --shell /bin/bash api && mkdir -p /api && chown api:api /api
 USER api
 
 FROM user-${USER_TYPE} AS final
