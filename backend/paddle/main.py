@@ -29,7 +29,7 @@ cors_domains = getenv('CORS_DOMAINS').split(',')
 app = Flask(__name__)
 app.secret_key = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_SAMESITE'] = None
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 CORS(app, supports_credentials=True)
 login_manager = LoginManager()
