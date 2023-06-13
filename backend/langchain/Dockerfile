@@ -8,9 +8,9 @@ FROM base AS user-node
 USER node
 
 FROM base AS user-other
-ENV UID=${USER_ID}
-RUN adduser -D --uid ${UID} --shell /bin/bash api && mkdir -p /api && chown hipaa:hipaa /api
-USER hipaa
+ARG USER_ID
+RUN adduser -D --uid $USER_ID --shell /bin/bash api && mkdir -p /api && chown hipaa:hipaa /api
+USER api
 
 FROM user-${USER_TYPE} AS final
 WORKDIR /api
