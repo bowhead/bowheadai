@@ -30,9 +30,9 @@ app = Flask(__name__)
 app.secret_key = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
-app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
+app.config['REMEMBER_COOKIE_SECURE'] = True
 
 CORS(app, supports_credentials=True)
 login_manager = LoginManager()
