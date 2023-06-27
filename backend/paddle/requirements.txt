@@ -19,3 +19,8 @@ pytesseract==0.3.10
 pypdf==3.9.1
 pypdf[image]
 requests==2.31.*
+langchain[llm]
+chromadb
+openai
+unstructured
+tiktoken

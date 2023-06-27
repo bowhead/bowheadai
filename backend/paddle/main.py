@@ -19,6 +19,27 @@ import pytesseract
 
 from models.User import User
 
+from langchain.document_loaders import DirectoryLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from dotenv import load_dotenv
+from langchain.vectorstores import Chroma
+from langchain.llms import OpenAI
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.agents.tools import Tool
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+from langchain.agents import initialize_agent
+from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from langchain.prompts import StringPromptTemplate
+from langchain import LLMChain
+from typing import List, Union
+from langchain.schema import AgentAction, AgentFinish, OutputParserException
+import re
+from langchain.prompts import PromptTemplate
+from langchain.retrievers import PubMedRetriever
+import sys
+
+sys.setrecursionlimit(1000)
 # Load environment variables from .env file
 load_dotenv()
 
@@ -88,7 +109,7 @@ def login():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
@@ -143,7 +164,7 @@ def upload_files():
     session['progress'] = 66
     session['message'] = 'Training model'
     print('INFO: Create Vector')
-    post_files(output_path)
+    create_vector(output_path)
     
     session['progress'] = 100
     
@@ -202,27 +223,22 @@ def pypdf_process(old_files, images_path, output_path, temp_path):
             for line in text_list:
                 f.write(f"{line}\n")
 
-def post_files(output_path):
+def create_vector(output_path):
+   
+    # ************ HEALTH DATA VECTOR ************
+    if not os.path.exists('vectors/'): os.makedirs('vectors/')
+    llm = OpenAI(temperature=0)
 
-    # Get all file paths in the folder
-    file_paths = [os.path.join(output_path, filename) for filename in os.listdir(output_path)]
+    loader = DirectoryLoader(output_path)
+    documents = loader.load()
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    documents = text_splitter.split_documents(documents)
+    embeddings = OpenAIEmbeddings()
 
-    # Prepare the files dictionary
-    files = []
-    for file_path in file_paths:
-        with open(file_path, 'rb') as file:
-            file_content = file.read() 
-        files.append(('files', (file_path, file_content, 'application/octet-stream')))
+    vector_folder = "./vectors/"+output_path[:-1].split("/")[1]
+
+    vectorstore = Chroma.from_documents(documents, embeddings, persist_directory=vector_folder)
+    vectorstore.persist() 
     
-    # Add the ID to the files dictionary
-    data = {'user_id':output_path.split("/")[1]}
-
-    print('INFO: Langchain Process',flush=True)
-    # Send the POST request
-    response = requests.post(api_url, files=files, data=data)
-
-    # Print the response
-    print(response.text)
-
 if __name__ == '__main__':
     socketio.run(app)
