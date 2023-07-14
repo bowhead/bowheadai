@@ -11,6 +11,7 @@ services:
       - "3000:3000"
     volumes:
       - ./paddle:/api
+    mem_limit: 15G
   langchain:
     image: healthdao-llm:latest
     container_name: healthdao-llm
