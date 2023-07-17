@@ -44,6 +44,11 @@ sys.setrecursionlimit(1000)
 # Load environment variables from .env file
 load_dotenv()
 
+#shutil.rmtree("vectors/")
+#shutil.rmtree("images/")
+#shutil.rmtree("output/")
+#shutil.rmtree("temp/")
+
 # Access the URL variables
 api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
@@ -147,18 +152,14 @@ def handle_connect():
 def disconnect():
     uuid = sanitize_filename(request.headers.get('uuid'))
     # Try to remove the tree; if it fails, throw an error using try...except.
-    for folder in ["temp/","images/","output/"]:
+    for folder in ["temp/","images/","output/", "vectors/"]:
         dir = folder + uuid + "/"
         try:
             shutil.rmtree(dir)
-            print(f"INFO: folder {folder} delete suscesfully")
+            print(f"INFO: folder {dir} delete suscesfully", flush=True)
         except OSError as e:
-            pass
-            #print("Error: %s - %s." % (e.filename, e.strerror))
-    data = {'user_id':uuid}    
-    response = requests.post(delete_url, data=data)
-    print(response.text,flush=True)
-   
+            #pass
+            print("Error: %s - %s." % (e.filename, e.strerror), flush=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -333,7 +334,7 @@ def upload_files():
         if file.filename in old_files:
             print(f'INFO: Skipping file {file.filename}, already processed')
             continue
-        print('INFO: Image Process ' + file.filename)
+        
         
         # Save the file or perform any desired operations
         filename = file.filename.split(".")
@@ -352,10 +353,11 @@ def upload_files():
     session['message'] = 'Training model'
     print('INFO: Create Vector', flush=True)
     create_vector(output_path)
-    
+
+    print('INFO: Create Vector Successfully: ' + user_id, flush=True)
     session['progress'] = 100
-    
     session['message'] = 'All done!'
+    
     return 'Files uploaded successfully'
 
 

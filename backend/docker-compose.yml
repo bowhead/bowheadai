@@ -12,19 +12,6 @@ services:
     volumes:
       - ./paddle:/api
     mem_limit: 15G
-  langchain:
-    image: healthdao-llm:latest
-    container_name: healthdao-llm
-    build:
-      context: ./langchain/
-    networks:
-      - ws
-    ports:
-      - "3001:3001"
-    environment:
-      - RUNNING_ENV=development
-    volumes:
-      - ./langchain:/api
 
 networks:
     ws:
