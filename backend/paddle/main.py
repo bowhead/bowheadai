@@ -326,7 +326,7 @@ def upload_files():
     uploaded_files = request.files.getlist('files')
 
     # Get the names of the old files
-    old_files = get_file_names(temp_path) + get_file_names(images_path)
+    old_files = get_file_names(temp_path) + get_file_names(images_path) + get_file_names(output_path)
     
     # Process each uploaded file
     for file in uploaded_files:
