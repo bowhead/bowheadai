@@ -44,11 +44,6 @@ sys.setrecursionlimit(1000)
 # Load environment variables from .env file
 load_dotenv()
 
-#shutil.rmtree("vectors/")
-#shutil.rmtree("images/")
-#shutil.rmtree("output/")
-#shutil.rmtree("temp/")
-
 # Access the URL variables
 api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
@@ -178,7 +173,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -193,7 +188,7 @@ def send_message():
     if history:
         for num in range(0,len(history),2):
             memory.save_context(history[num], history[num+1])
-    #memory.save_context(history)
+   
     readonlymemory = ReadOnlySharedMemory(memory=memory)
 
     vectorstore = Chroma(persist_directory=f"./vectors/{userId}/", embedding_function=embeddings)
@@ -297,7 +292,7 @@ def send_message():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
