@@ -87,19 +87,13 @@ class PubMedAPIWrapper(BaseModel):
         text = result.read().decode("utf-8")
         json_text = json.loads(text)
 
-        #print(json_text)
+  
         
         articles = []
         webenv = json_text["esearchresult"]["webenv"]
         for uid in json_text["esearchresult"]["idlist"]:
             article = self.retrieve_article(uid, webenv)
             articles.append(article)
-        
-        """for article in articles:
-            print("uid: " + article["uid"])
-            print("title: " + article["title"])
-            print("summary: " + article["summary"])
-            print("")"""
 
         # Convert the list of articles to a JSON string
         return articles

@@ -151,18 +151,14 @@ def handle_connect():
 def disconnect():
     uuid = sanitize_filename(request.headers.get('uuid'))
     # Try to remove the tree; if it fails, throw an error using try...except.
-    for folder in ["temp/","images/","output/"]:
+    for folder in ["temp/","images/","output/", "vectors/"]:
         dir = folder + uuid + "/"
         try:
             shutil.rmtree(dir)
-            print(f"INFO: folder {folder} delete suscesfully")
+            print(f"INFO: folder {dir} delete suscesfully", flush=True)
         except OSError as e:
-            pass
-            #print("Error: %s - %s." % (e.filename, e.strerror))
-    data = {'user_id':uuid}    
-    response = requests.post(delete_url, data=data)
-    print(response.text,flush=True)
-   
+            #pass
+            print("Error: %s - %s." % (e.filename, e.strerror), flush=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -181,7 +177,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -196,7 +192,7 @@ def send_message():
     if history:
         for num in range(0,len(history),2):
             memory.save_context(history[num], history[num+1])
-    #memory.save_context(history)
+   
     readonlymemory = ReadOnlySharedMemory(memory=memory)
 
     vectorstore = Chroma(persist_directory=f"./vectors/{userId}/", embedding_function=embeddings)
@@ -300,7 +296,7 @@ def send_message():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
@@ -329,7 +325,7 @@ def upload_files():
     uploaded_files = request.files.getlist('files')
 
     # Get the names of the old files
-    old_files = get_file_names(temp_path) + get_file_names(images_path)
+    old_files = get_file_names(temp_path) + get_file_names(images_path) + get_file_names(output_path)
     
     # Process each uploaded file
     for file in uploaded_files:
@@ -337,7 +333,7 @@ def upload_files():
         if file.filename in old_files:
             print(f'INFO: Skipping file {file.filename}, already processed')
             continue
-        print('INFO: Image Process ' + file.filename)
+        
         
         # Save the file or perform any desired operations
         filename = file.filename.split(".")
@@ -356,10 +352,11 @@ def upload_files():
     session['message'] = 'Training model'
     print('INFO: Create Vector', flush=True)
     create_vector(output_path)
-    
+
+    print('INFO: Create Vector Successfully: ' + user_id, flush=True)
     session['progress'] = 100
-    
     session['message'] = 'All done!'
+    
     return 'Files uploaded successfully'
 
 
