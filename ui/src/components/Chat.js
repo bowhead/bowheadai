@@ -6,12 +6,14 @@ const sendMessageUrl = process.env.REACT_APP_SEND_MESSAGE_ENDPOINT;
 
 function Chat({userId,...props}) {
   const [messages, setMessages] = useState([]);
+  const [history, setHistory] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [loadingResp, setLoadingResp] = useState(false);
 
   async function handleSendMessage() {
     if (inputValue.trim() !== "" ) {
       setMessages([...messages, { "class":"user-msg", "msg": inputValue}]);
+      setHistory([...history, { "input": inputValue}]);
       setInputValue("");
       setLoadingResp(true);
       try {
@@ -21,14 +23,16 @@ function Chat({userId,...props}) {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: inputValue, history: messages, userId:userId})
+          body: JSON.stringify({ message: inputValue, history: history, userId:userId})
         });
 
         setLoadingResp(false);
 
         if (response.ok) {
           const responseData = await response.json();
-          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseData.response }]);
+          const responseJSON = JSON.parse(responseData.response)
+          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseJSON.answer }]);
+          setHistory(history => [...history, { "output": responseJSON.answer }]);
         } else {
           throw new Error("Error en la solicitud");
         }
