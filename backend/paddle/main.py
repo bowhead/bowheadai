@@ -56,7 +56,7 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
 app.config['REMEMBER_COOKIE_SECURE'] = True
 
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=cors_domains)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
