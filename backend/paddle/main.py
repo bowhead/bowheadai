@@ -11,6 +11,7 @@ from flask_login import login_user, current_user, LoginManager, login_required
 from os import getenv
 from dotenv import load_dotenv
 from pathvalidate import sanitize_filename
+from uuid import uuid4
 
 from pypdf import PdfReader
 import os
@@ -168,6 +169,8 @@ def load_user(user_id):
 @app.route('/login', methods=['POST'])
 def login():
     # uuid = request.json.get('uuid')
+    #generate a random uuid
+    uuid = str(uuid4())
     if request.cookies.get('session'):
         return jsonify({'status': 200}), 200
 
@@ -175,7 +178,7 @@ def login():
  
     user = User(uuid)
     login_user(user, remember=True, force=True)
-    return jsonify({'status': 200}), 200
+    return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
 @login_required
