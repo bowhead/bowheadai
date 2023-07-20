@@ -168,14 +168,12 @@ def load_user(user_id):
 
 @app.route('/login', methods=['POST'])
 def login():
-    # uuid = request.json.get('uuid')
-    #generate a random uuid
-    uuid = str(uuid4())
     if request.cookies.get('session'):
         return jsonify({'status': 200}), 200
 
     session['foo'] = 'barbar'
  
+    uuid = request.json.get('uuid')
     user = User(uuid)
     login_user(user, remember=True, force=True)
     return jsonify({'status': 200, 'userId': uuid}), 200
