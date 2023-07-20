@@ -66,12 +66,12 @@ Session(app)
 socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False)
 
 # *** TEMPLATE ***
-template = """Answer the following questions as best you can, You are a friendly, conversational personal medical assistant. 
+template = """Answer the following questions as best you can only using the tools, You are a friendly, conversational personal medical assistant. 
 You have access to the following tools:
 
 {tools}
 
-You must show information about user data, find insights between data with the tool health-documents-vector. If is necessary you should give health recommendations with pubmed-query-search tool about the user health problems, always making it clear that users should consult a specialist.
+You must show information about user data, find insights between data with the tool health-documents-vector. If is necessary you should give health recommendations or information with pubmed-query-search tool about the user health problems, always making it clear that users should consult a specialist.
 
 Use the following format:
 
@@ -181,7 +181,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -283,7 +283,7 @@ def send_message():
     output_parser = CustomOutputParser()
     
     # LLM chain consisting of the LLM and a prompt
-    llm_chain = LLMChain(llm=ChatOpenAI(model_name='gpt-4'), prompt=prompt_with_history)
+    llm_chain = LLMChain(llm=ChatOpenAI(model_name='gpt-4', temperature=0), prompt=prompt_with_history)
 
     tool_names = [tool.name for tool in tools]
     agent = LLMSingleActionAgent(
@@ -300,7 +300,7 @@ def send_message():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
