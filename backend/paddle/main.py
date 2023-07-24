@@ -49,6 +49,7 @@ load_dotenv()
 api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
+cookie_domain = getenv('COOKIE_DOMAIN')
 app = Flask(__name__)
 app.secret_key = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -56,6 +57,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
 app.config['REMEMBER_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_DOMAIN'] = cookie_domain
 
 CORS(app, supports_credentials=True, origins=cors_domains)
 login_manager = LoginManager()
