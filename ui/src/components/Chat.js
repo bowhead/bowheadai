@@ -1,4 +1,4 @@
-import { Box, Input, IconButton} from "@chakra-ui/react";
+import { Box, Input, IconButton,Text} from "@chakra-ui/react";
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 
@@ -32,7 +32,7 @@ function Chat({userId,...props}) {
         if (response.ok) {
           const responseData = await response.json();
           const responseJSON = JSON.parse(responseData.response)
-          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseJSON.answer }]);
+          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseJSON.answer + ( typeof responseJSON.sources !== 'undefined' && responseJSON.sources.length > 0 ? "\nSources:\n"+responseJSON.sources.join("\n"):"" )}]);
           setHistory(history => [...history, { "output": responseJSON.answer }]);
         } else {
           throw new Error("Error en la solicitud");
@@ -71,7 +71,8 @@ function Chat({userId,...props}) {
             mb={2}
             className={message.class}
           >
-            {message.msg}
+            <Text whiteSpace="pre-wrap">{message.msg}</Text>
+            
           </Box>
         ))}
         {loadingResp && <Box alignItems="center">

@@ -85,7 +85,7 @@ Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times until there is enough information to answer the Question)
 Thought: I now know the final answer
-Final Answer: the final answer to the original input question, adding all necessary information and sources, should be a json with the keys: answer and source, source should be a list of uids
+Final Answer: the final answer to the original input question, adding all necessary information and sources. The answer should be a json with the key "answer" and the key "sources" as a list of urls generated with the uid, the base url is: "https://pubmed.ncbi.nlm.nih.gov/".
 
 Chat history:
 {chat_history}
@@ -182,7 +182,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -193,12 +193,9 @@ def send_message():
     llm = OpenAI(temperature=0)
 
     embeddings = OpenAIEmbeddings()
-    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    if history:
-        for num in range(0,len(history),2):
-            memory.save_context(history[num], history[num+1])
-   
+    memory = ConversationBufferMemory(memory_key="chat_history")
     readonlymemory = ReadOnlySharedMemory(memory=memory)
+
 
     vectorstore = Chroma(persist_directory=f"./vectors/{userId}/", embedding_function=embeddings)
 
@@ -229,40 +226,22 @@ def send_message():
 
     
     # ************ PUBMED RETRIEVER ************
-    pubmed_retriever = PubMedRetriever(top_k_results=5)
-
-    prompt_template_pubmed = """Use the following context about medical articles to respond to the question. Return an answer with metadata ("uid").
-
-    Context:
-    {context}
-
-    Question: {question}
-    Answer:"""
-
-
-    PROMPT_PUBMED = PromptTemplate(
-        template=prompt_template_pubmed, input_variables=["context", "question"]
-    )
-    DOC_PROMPT = PromptTemplate(
-        template="Answer: {page_content}\nuids: {uid}", input_variables=["page_content", "uid"]
-    )
-
-    chain_type_kwargs = {"prompt": PROMPT_PUBMED, "document_prompt":DOC_PROMPT}
 
     pubmed_chain = RetrievalQA.from_chain_type(
         llm=llm, 
         chain_type="stuff", 
-        retriever=pubmed_retriever, 
-        chain_type_kwargs=chain_type_kwargs,
-        memory=readonlymemory
+        retriever=PubMedRetriever(top_k_results=5),
+        memory=readonlymemory,
+        return_source_documents=True, 
+        input_key="question"
     )
 
     # ************ TOOLS ************
     tools = [
         Tool(
             name = "pubmed-query-search",
-            func = pubmed_chain.run,
-            description = "Pubmed Query Search - Useful to obtain health information resources for recommendations from pubmed, the input should be a text for pubmed search"
+            func = lambda query: pubmed_chain({"question": query}),
+            description = "Pubmed Query Search - Useful to obtain health information resources for recommendations from pubmed, Input should be a fully formed question."
         ),
         Tool(
             name="health-documents-vector",
@@ -294,14 +273,14 @@ def send_message():
         allowed_tools=tool_names
     )
 
-    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
+    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, memory=memory)
     
     result = agent_executor.run(message)
     return jsonify({'response':result})
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
