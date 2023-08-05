@@ -173,7 +173,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -271,7 +271,7 @@ def send_message():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
