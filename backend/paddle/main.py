@@ -38,6 +38,10 @@ from langchain.prompts import PromptTemplate
 from src.pupmed import PubMedRetriever
 from langchain.memory import ConversationBufferMemory, ReadOnlySharedMemory
 
+from langchain.embeddings import GPT4AllEmbeddings
+from langchain.embeddings import HuggingFaceInstructEmbeddings
+from InstructorEmbedding import INSTRUCTOR
+
 import sys
 
 sys.setrecursionlimit(1000)
@@ -173,7 +177,7 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 @app.route('/send-message', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def send_message():
     message = request.json.get('message', '')
     history = request.json.get('history', '')
@@ -227,6 +231,18 @@ def send_message():
         input_key="question"
     )
 
+    # ************ MEDICAL TRIALS VECTOR ************
+
+    instructor_embeddings = HuggingFaceInstructEmbeddings(model_name = 'hkunlp/instructor-base', model_kwargs = {"device": "cuda"})
+
+    vectorstore_trials = Chroma(persist_directory="breast-cancer-S1500-O200-keys/", embedding_function = instructor_embeddings)
+
+    clinical_trials_vectorstore = RetrievalQA.from_chain_type(
+        llm=llm, 
+        chain_type="stuff", 
+        retriever=vectorstore_trials.as_retriever(),
+    )
+
     # ************ TOOLS ************
     tools = [
         Tool(
@@ -238,6 +254,12 @@ def send_message():
             name="health-documents-vector",
             func=health_data_vectorstore.run,
             description="Health Documents QA - useful to obtain information about the users private health data. The input should be the original question",
+
+        ),
+        Tool(
+            name="clinical-trials-vector",
+            func=clinical_trials_vectorstore.run,
+            description="Clinical Trials Match - useful to match the users health data (inclusion and exclusion criteria) with the best trial option. The input should be the original question",
 
         )
     ]
@@ -271,7 +293,7 @@ def send_message():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def upload_files():
     delete_old_files = request.form.get('deleteOldFiles', 'true') == 'true'
     session['progress'] = 10
