@@ -344,8 +344,6 @@ class MyCallbackHandler(BaseCallbackHandler):
 
         if ''.join(self.last_tokens)=="Final Answer:":
             self.answer_reached = True
-        
-        
 
     def on_llm_end(self, *args, **kwargs) -> None:
         return self.q.empty()
@@ -434,9 +432,6 @@ def pypdf_process(old_files, images_path, output_path, temp_path):
         if file in old_files:
             print(f'INFO: Skipping image {file}, already processed')
             continue
-        #print('INFO: Pypdf Process ' + file)
-
-        
         reader = PdfReader(temp_path+file)
         pages = len(reader.pages)
 
