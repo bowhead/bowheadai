@@ -12,6 +12,13 @@ services:
     volumes:
       - ./paddle:/api
     mem_limit: 15G
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
 networks:
     ws:

@@ -20,8 +20,12 @@ pypdf==3.9.1
 pypdf[image]
 requests==2.31.*
 langchain[llm]
+langchain
 chromadb
 openai
 unstructured
 tiktoken
 InstructorEmbedding
+torch
+sentence_transformers
+transformers
