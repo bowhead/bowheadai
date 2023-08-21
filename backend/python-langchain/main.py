@@ -252,7 +252,7 @@ def send_message():
     )
 
     # ************ MEDICAL TRIALS VECTOR ************
-    instructor_embeddings = HuggingFaceInstructEmbeddings(model_name = 'hkunlp/instructor-base', model_kwargs = {"device": "cuda"})
+    instructor_embeddings = HuggingFaceInstructEmbeddings(model_name = 'hkunlp/instructor-base')
 
     vectorstore_trials = Chroma(persist_directory="breast-cancer-S1500-O200-keys/", embedding_function = instructor_embeddings)
 
