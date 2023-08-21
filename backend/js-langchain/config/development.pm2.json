@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "name": "langchain",
+      "script": "index.js",
+      "watch": true,
+      "instance_var": "INSTANCE_ID",
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "ignore_watch": [
+        ".git",
+        "uploads",
+        "node_modules",
+        "./src/healthDAOVector"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "TZ": "utc"
+      }
+    }
+  ]
+}

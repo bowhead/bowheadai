@@ -1,8 +1,0 @@
-images/
-temp/
-output/
-venv/
-__pycache__/
-.env
-flask_session/
-vectors/

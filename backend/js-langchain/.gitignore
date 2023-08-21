@@ -1,0 +1,14 @@
+src/healthDAODocs/
+node_modules/
+.env
+Apple_Health_Records/
+Health_Record/
+eng.traineddata
+
+# exclude everything
+uploads/*
+src/healthDAOVector/*
+
+# exception to the rule
+!uploads/.gitkeep
+!src/healthDAOVector/.gitkeep

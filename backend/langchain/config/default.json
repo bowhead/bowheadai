@@ -1,7 +1,0 @@
-{
-  "cors" : {
-    "development": true,
-    "staging": ["http://localhost:3000"],
-    "production": ["http://localhost:3000"]
-  }
-}

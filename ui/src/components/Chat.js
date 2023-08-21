@@ -20,6 +20,7 @@ function Chat({userId,...props}) {
         const response = await fetch(sendMessageUrl, {
           method: "POST",
           mode: "cors",
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json"
           },

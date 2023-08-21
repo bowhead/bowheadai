@@ -4,13 +4,13 @@ services:
     image: healthdao-pdf-processing:latest
     container_name: healthdao-pdf-processing
     build:
-      context: ./paddle/
+      context: ./python-langchain/
     networks:
       - ws
     ports:
       - "3000:3000"
     volumes:
-      - ./paddle:/api
+      - ./python-langchain:/api
     mem_limit: 15G
     deploy:
       resources:
@@ -19,6 +19,5 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-
 networks:
     ws:
