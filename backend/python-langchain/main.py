@@ -28,7 +28,6 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.agents.tools import Tool
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
-from langchain.agents import initialize_agent
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
 from langchain.prompts import StringPromptTemplate
 from langchain import LLMChain
@@ -38,7 +37,6 @@ from langchain.prompts import PromptTemplate
 from src.pupmed import PubMedRetriever
 from langchain.memory import ConversationBufferMemory, ReadOnlySharedMemory
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.embeddings import GPT4AllEmbeddings
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 
 
@@ -55,11 +53,18 @@ load_dotenv()
 api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
+cookie_domain = getenv('COOKIE_DOMAIN')
 app = Flask(__name__)
 app.secret_key = getenv('SECRET_KEY', '')
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_DOMAIN'] = cookie_domain
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
+app.config['REMEMBER_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_DOMAIN'] = cookie_domain
 
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=cors_domains)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
