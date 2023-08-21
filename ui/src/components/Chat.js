@@ -29,14 +29,33 @@ function Chat({userId,...props}) {
 
         setLoadingResp(false);
 
-        if (response.ok) {
-          const responseData = await response.json();
-          const responseJSON = JSON.parse(responseData.response)
-          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseJSON.answer + ( typeof responseJSON.sources !== 'undefined' && responseJSON.sources.length > 0 ? "\nSources:\n"+responseJSON.sources.join("\n"):"" )}]);
-          setHistory(history => [...history, { "output": responseJSON.answer }]);
-        } else {
-          throw new Error("Error en la solicitud");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let result = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          
+
+          if (value) {
+            const text = decoder.decode(value);
+            result += text;
+   
+            setMessages((prevMessages) => {
+              const lastMessage = prevMessages[prevMessages.length - 1];
+            
+              if (lastMessage && lastMessage.class === "system-msg") {
+                return [...prevMessages.slice(0, -1), { class: "system-msg", msg: result }];
+              } else {
+                return [...prevMessages, { class: "system-msg", msg: result }];
+              }
+            });
+
+          }
         }
+        setHistory(history => [...history, { "output": result }]);
       } catch (error) {
         console.error(error);
         // Manejar el error en la solicitud
