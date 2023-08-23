@@ -55,8 +55,10 @@ function Chat({userId,...props}) {
 
           }
         }
+        
         setHistory(history => [...history, { "output": result }]);
       } catch (error) {
+        setLoadingResp(false);
         console.error(error);
         // Manejar el error en la solicitud
       }
@@ -107,9 +109,10 @@ function Chat({userId,...props}) {
           onChange={handleInputValueChange}
           onKeyPress={handleKeyPress}
           placeholder="Message..."
+          isDisabled={loadingResp}
           {...props}
         />
-        <IconButton aria-label='Send' icon={<FaPaperPlane />} bgColor="daoPurple" onClick={handleSendMessage}/>
+        <IconButton aria-label='Send' icon={<FaPaperPlane />} bgColor="daoPurple" onClick={handleSendMessage} isDisabled={loadingResp}/>
       </Box>
     </Box>
   );

@@ -328,7 +328,7 @@ def send_message():
 
     agent_thread = threading.Thread(target=agent_executor.run, args=(message,))
     agent_thread.start()
-    return Response(stream_with_context(generate(q)), content_type='text/event-stream')
+    return Response(stream_with_context(generate(q)), content_type='text/event-stream', headers={'X-Accel-Buffering': 'no'})
 
 class MyCallbackHandler(BaseCallbackHandler):
     def __init__(self, q):
