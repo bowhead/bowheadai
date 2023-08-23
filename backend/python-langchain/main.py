@@ -120,7 +120,7 @@ prompt_template_trials_vector = """Use the following context about medical trial
 
     Question: {question}
     Answer:"""
-q = Queue()
+
 # *** Set up a prompt template ***
 class CustomPromptTemplate(StringPromptTemplate):
     # The template to use
@@ -300,6 +300,8 @@ def send_message():
     )
 
     output_parser = CustomOutputParser()
+    
+    q = Queue()
     callback_fn = MyCallbackHandler(q)
     # LLM chain consisting of the LLM and a prompt
     llm_chain = LLMChain(llm=ChatOpenAI(streaming=True, callbacks=[callback_fn],model_name='gpt-4', temperature=0), prompt=prompt_with_history)
@@ -336,8 +338,7 @@ class MyCallbackHandler(BaseCallbackHandler):
 
     def on_llm_start(self, *args, **kwargs) -> None:
         """Run when LLM starts running."""
-        with q.mutex:
-            q.queue.clear()
+        self.q.queue.clear()
     def on_llm_new_token(self, token, **kwargs) -> None:
         self.last_tokens.append(token)
 
