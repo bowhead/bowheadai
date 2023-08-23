@@ -3,6 +3,7 @@ backend/chroma
 backend/config
 backend/langchain
 backend/.env
+backend/cache/
 # dependencies
 node_modules
 /.pnp
