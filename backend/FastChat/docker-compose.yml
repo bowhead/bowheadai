@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  fastchat-controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - ws
+    image: fastchat:latest
+    ports:
+      - "21001:21001"
+    entrypoint: ["python3.9", "-m","fastchat.serve.controller", "--host", "0.0.0.0", "--port", "21001"]
+  
+  fastchat-model-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./fastchat
+        target: /app/fastchat
+    networks:
+      - ws
+    image: fastchat:latest
+    ports:
+      - "21002:21002"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: sh -c "huggingface-cli login --token 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 --add-to-git-credential && python3.9 -m fastchat.serve.model_worker --model-path epfl-llm/meditron-7b --controller-address http://fastchat-controller:21001 --worker-address http://fastchat-model-worker:21002 --host 0.0.0.0"
+
+volumes:
+  huggingface:
+
+networks:
+    ws:
