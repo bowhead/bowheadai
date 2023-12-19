@@ -1,7 +1,60 @@
-version: "3.3"
+version: "3.9"
+
 services:
-  ws:
+  fastchat-controller:
+    build:
+      context: ./FastChat/
+      dockerfile: Dockerfile
+    networks:
+      - ws
+    image: fastchat:latest
+    ports:
+      - "21001:21001"
+    entrypoint: ["python3.9", "-m","fastchat.serve.controller", "--host", "0.0.0.0", "--port", "21001"]
+  
+  fastchat-model-worker:
+    build:
+      context: ./FastChat/
+      dockerfile: Dockerfile
+    volumes:
+      - huggingface:/root/.cache/huggingface
+      - type: bind
+        source: ./FastChat/fastchat
+        target: /app/fastchat
+    networks:
+      - ws
+    image: fastchat:latest
+    ports:
+      - "21002:21002"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: sh -c "huggingface-cli login --token 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 --add-to-git-credential && python3.9 -m fastchat.serve.model_worker --model-path epfl-llm/meditron-7b --model-names "gpt-3.5-turbo,text-davinci-003,text-embedding-ada-002" --controller-address http://fastchat-controller:21001 --worker-address http://fastchat-model-worker:21002 --host 0.0.0.0 --conv-template one_shot_trials"
+
+  openai-api-server:
+    build:
+      context: ./FastChat/
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./FastChat/fastchat
+        target: /app/fastchat
+    networks:
+      - ws
+    image: fastchat:latest
+    ports:
+      - "8000:8000"
+    command: python3.9 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 --controller-address http://fastchat-controller:21001
+
+  langchain:
     image: healthdao-pdf-processing:latest
+    environment:
+      OPENAI_API_BASE: http://openai-api-server:8000/v1
+      OPENAI_API_KEY: EMPTY
     container_name: healthdao-pdf-processing
     build:
       context: ./python-langchain/
@@ -12,5 +65,9 @@ services:
     volumes:
       - ./python-langchain:/api
     mem_limit: 15G
+
+volumes:
+  huggingface:
+
 networks:
     ws:

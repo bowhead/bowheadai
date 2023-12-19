@@ -368,6 +368,14 @@ register_conv_template(
     )
 )
 
+system_msg_trials = "You are a helpful, respectful and honest assistant." + \
+        "Always answer as helpfully as possible, while being safe." + \
+        "Use only the following context about clinical trials to answer the user's question." + \
+        "Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content." + \
+        "Please ensure that your responses are socially unbiased and positive in nature.\n\n" + \
+        "If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct." + \
+        "If you don't know the answer to a question, please don't share false information, or invent information that is not in the context. Make an analysis to respond the question only with the information of the context that match the question"""
+
 system_msg_meditron = "You are a helpful, respectful and honest assistant." + \
         "Always answer as helpfully as possible, while being safe." + \
         "Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content." + \
@@ -407,6 +415,48 @@ register_conv_template(
 5. Fatalities: In severe cases, particularly among high-risk groups, listeriosis can be fatal.
 
 It's important to note that early diagnosis and appropriate treatment, typically with antibiotics, can greatly improve the prognosis for those with listeriosis. Therefore, seeking medical attention promptly if listeriosis is suspected is crucial."""
+            )
+        ),
+        offset=2,
+        sep_style=SeparatorStyle.ADD_COLON_SINGLE,
+        sep="\n### ",
+        stop_str=["<\s>", "###", "Assistant:", "User:"]
+    )
+)
+
+register_conv_template(
+    Conversation(
+        name="one_shot_trials",
+        system_message=system_msg_trials,
+        roles=("User", "Assistant"),
+        messages=(
+            (
+                "User",
+                """*** Context *** 
+page_content='Inclusion Criteria:
+Clinical diagnosis of epithelial ovarian cancer stage I
+nctId: NCT05212779
+
+page_content='Inclusion Criteria:
+Women with stage III-IV ovarian cancer, undergoing interval (after 3-4 cycles of chemotherapy) or delayed (\>5 cycles of chemotherapy) cytoreductive surgeries or no cytoreductive surgery (\>5 cycles of chemotherapy alone.
+nctId: NCT05523804
+
+page_content='Inclusion Criteria:
+* Minimum age 18 years
+* Signed informed consent form
+* Confirmed diagnosis of ovarian cancer except low grade serous, clear cell and mucinous histology
+* Where patients are treatment naïve, patients need to have disease stage FIGO (International Federation of Gynecology and Obstetrics) III or FIGO IV.
+* Patient is expected to receive primary chemotherapy/maintenance after initial surgical debulking or a further line of systemic therapy in the relapsed setting according to treatment guidelines
+* Feasibility of collecting malignant ascites and/or pleural effusion during either primary debulking surgery or a routine drainage procedure prior to initiation of the first or next line of systemic therapy
+* ECOG (Eastern Cooperative Oncology Group) stage 0-2
+nctId: NCT06068738
+
+*** User's Question ***
+Is there any clinical trial for ovarian stage III cancer at this time?""",
+            ),
+            (
+                "Assistant",
+                """There are currently several clinical trials for ovarian stage III cancer at this time. Some examples include: NCT05523804, and NCT06068738. These trials may have specific criteria for inclusion, so it is important to carefully review the details before determining eligibility. Please consult with a healthcare provider for more information about participating in a clinical trial."""
             )
         ),
         offset=2,
