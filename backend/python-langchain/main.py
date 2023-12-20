@@ -18,22 +18,17 @@ from PIL import Image
 import pytesseract
 from dotenv import load_dotenv
 import re
-
+from models.User import User
 from queue import Queue
 import sys
 from flask import Response, stream_with_context
 import threading 
-
-
-import time
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Document
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import StrOutputParser
-
-import json
 
 sys.setrecursionlimit(1000)
 # Load environment variables from .env file
@@ -63,38 +58,22 @@ Session(app)
 socketio = SocketIO(app, cors_allowed_origins=cors_domains, manage_session=False)
 
 # load from disk
-instructor_embeddings = HuggingFaceInstructEmbeddings(model_name = 'hkunlp/instructor-base')
-db3 = Chroma(persist_directory="./ovarian-cancer", embedding_function=instructor_embeddings)
+instructor_embeddings = HuggingFaceInstructEmbeddings(model_name='hkunlp/instructor-base')
+db3 = Chroma(persist_directory="./ovarian-cancer-vector", embedding_function=instructor_embeddings)
 # create the open-source embedding function
 retriever = db3.as_retriever(
     search_type="mmr",  # Also test "similarity"
-    search_kwargs={"k": 3},
+    search_kwargs={"k": 6},
 )
 
 prompt = PromptTemplate.from_template(
     """
     *** Instructions ***
     Use the following pieces of context about clinical trials to answer the user's question. Add the necessary information about the trials. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    
-    *** Context *** 
-    page_content='Inclusion Criteria:
-    Clinical diagnosis of epithelial ovarian cancer stage III
-    nctId: NCT05212779
 
-    page_content='Inclusion Criteria:
-    Women with stage III-IV ovarian cancer, undergoing interval (after 3-4 cycles of chemotherapy) or delayed (\>5 cycles of chemotherapy) cytoreductive surgeries or no cytoreductive surgery (\>5 cycles of chemotherapy alone.
-    nctId: NCT05523804
-    
-    page_content='Inclusion Criteria:
-    * Minimum age 18 years
-    * Signed informed consent form
-    * Confirmed diagnosis of ovarian cancer except low grade serous, clear cell and mucinous histology
-    * Where patients are treatment naïve, patients need to have disease stage FIGO (International Federation of Gynecology and Obstetrics) III or FIGO IV.
-    * Patient is expected to receive primary chemotherapy/maintenance after initial surgical debulking or a further line of systemic therapy in the relapsed setting according to treatment guidelines
-    * Feasibility of collecting malignant ascites and/or pleural effusion during either primary debulking surgery or a routine drainage procedure prior to initiation of the first or next line of systemic therapy
-    * ECOG (Eastern Cooperative Oncology Group) stage 0-2
-    nctId: NCT06068738
-    
+    *** Context ***
+    {context}
+
     *** User's Question ***
     {question}"""
 )
@@ -116,18 +95,19 @@ def authenticated_only(f):
 def handle_connect():
     emit('message', {'text': 'Connected'})
 
+
 @socketio.on('disconnect')
 def disconnect():
     uuid = sanitize_filename(request.headers.get('uuid'))
     # Try to remove the tree; if it fails, throw an error using try...except.
-    for folder in ["temp/","images/","output/", "vectors/"]:
+    for folder in ["temp/", "images/", "output/", "vectors/"]:
         dir = folder + uuid + "/"
         try:
             shutil.rmtree(dir)
             print(f"INFO: folder {dir} delete suscesfully", flush=True)
         except OSError as e:
-            #pass
             print("Error: %s - %s." % (e.filename, e.strerror), flush=True)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -146,14 +126,20 @@ def login():
     return jsonify({'status': 200, 'userId': uuid}), 200
 
 
-
 @app.route('/send-message', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def send_message():
     message = request.json.get('message', '')
-    response = runnable.invoke({"question": message})
+    docs = retriever.get_relevant_documents(message)
+    text = ""
+    for doc in docs:
+        text += f"""Clinical trial nctId: {doc.metadata["nctId"]}
+    Information: {doc.page_content}
+
+    """
+    response = runnable.invoke({"question": message, "context": text})
     return jsonify({'response': response})
 
-    
+
 if __name__ == '__main__':
     socketio.run(app)

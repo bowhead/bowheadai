@@ -57,10 +57,7 @@ function App() {
       {
       logged? (
       <Flex color="white" alignItems="stretch" height="100%">
-        {!filesUploaded && <Box width="20%" height="100%" bgColor="white" id='filesContainer'>
-          <Sidebar fileList={filesList} removeFile={handleFileRemoval}/>
-          <FileUploader width="80%" onFilesUploaded={handleFilesUploaded} deleteOldFiles={false} userId={userId} margin="0 auto"/>
-        </Box>}
+        
         <Box flex="1" height="100%" direction="column">
           
             {filesUploaded && 

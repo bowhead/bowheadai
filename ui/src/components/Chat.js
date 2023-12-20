@@ -2,16 +2,7 @@ import { Box, Input, IconButton,Text} from "@chakra-ui/react";
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 
-const sendMessageUrl = 'http://127.0.0.1:3000/send-message'
-
-// Define your arguments or replace with a more robust solution like yargs or command-line-args
-const args = {
-  controllerAddress: 'http://0.0.0.0:21001',
-  workerAddress: 'http://127.0.0.1:21002',
-  modelName: 'meditron-7b', // Replace with actual model name
-  temperature: 0.3,
-  maxNewTokens: 512,
-};
+const sendMessageUrl = process.env.REACT_APP_SEND_MESSAGE_ENDPOINT;
 
 function Chat({userId,...props}) {
   const [messages, setMessages] = useState([]);
