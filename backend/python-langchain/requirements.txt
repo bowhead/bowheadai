@@ -1,6 +1,7 @@
 flask==2.3.2
 flask-babel==3.1.0
 flask-cors==4.0.0
+Werkzeug==2.3.8
 Flask-SocketIO==5.3.4
 Flask-Session==0.5.0
 Flask-Login==0.6.2
@@ -20,7 +21,6 @@ pytesseract==0.3.10
 pypdf==3.9.1
 pypdf[image]
 requests==2.31.*
-langchain[llm]
 langchain
 chromadb
 openai

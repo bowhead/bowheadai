@@ -20,7 +20,6 @@ function Chat({userId,...props}) {
         const response = await fetch(sendMessageUrl, {
           method: "POST",
           mode: "cors",
-          credentials: 'include',
           headers: {
             "Content-Type": "application/json"
           },
@@ -29,42 +28,17 @@ function Chat({userId,...props}) {
 
         setLoadingResp(false);
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let result = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            break;
-          }
-          
-
-          if (value) {
-            const text = decoder.decode(value);
-            result += text;
-   
-            setMessages((prevMessages) => {
-              const lastMessage = prevMessages[prevMessages.length - 1];
-            
-              if (lastMessage && lastMessage.class === "system-msg") {
-                return [...prevMessages.slice(0, -1), { class: "system-msg", msg: result }];
-              } else {
-                return [...prevMessages, { class: "system-msg", msg: result }];
-              }
-            });
-
-          }
+        if (response.ok) {
+          const responseJSON = await response.json();
+          setMessages(messages => [...messages, { "class": "system-msg", "msg": responseJSON.response}]);
+          setHistory(history => [...history, { "output": responseJSON.response }]);
+        } else {
+          throw new Error("Error en la solicitud");
         }
-        
-        setHistory(history => [...history, { "output": result }]);
       } catch (error) {
-        setLoadingResp(false);
         console.error(error);
         // Manejar el error en la solicitud
       }
-
-      
-      
     }
   }
 
