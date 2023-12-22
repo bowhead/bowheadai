@@ -33,7 +33,7 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    command: sh -c "huggingface-cli login --token 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 --add-to-git-credential && python3.9 -m fastchat.serve.model_worker --model-path epfl-llm/meditron-7b --model-names "gpt-3.5-turbo,text-davinci-003,text-embedding-ada-002" --controller-address http://fastchat-controller:21001 --worker-address http://fastchat-model-worker:21002 --host 0.0.0.0 --conv-template one_shot_trials"
+    command: sh -c "huggingface-cli login --token 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 --add-to-git-credential && python3.9 -m fastchat.serve.model_worker --model-path epfl-llm/meditron-7b --model-names "gpt-3.5-turbo,text-davinci-003,text-embedding-ada-002" --controller-address http://fastchat-controller:21001 --worker-address http://fastchat-model-worker:21002 --host 0.0.0.0 --conv-template one_shot_medical"
 
   openai-api-server:
     build:

@@ -1,9 +1,7 @@
 from functools import wraps
 from flask import Flask, request, session, jsonify
 from flask_cors import CORS
-import os
 from os import getenv
-import requests
 import shutil
 from flask_socketio import SocketIO, emit, disconnect
 from flask_session import Session
@@ -12,18 +10,12 @@ from os import getenv
 from dotenv import load_dotenv
 from pathvalidate import sanitize_filename
 
-from pypdf import PdfReader
+
 import os
-from PIL import Image
-import pytesseract
 from dotenv import load_dotenv
 import re
 from models.User import User
-from queue import Queue
 import sys
-from flask import Response, stream_with_context
-import threading 
-from langchain.text_splitter import RecursiveCharacterTextSplitter, Document
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
@@ -35,6 +27,7 @@ sys.setrecursionlimit(1000)
 load_dotenv()
 
 # Access the URL variables
+openai_token = getenv('OPENAI_TOKEN')
 api_url = getenv('LANGCHAIN_UPLOAD_ENDPOINT')
 delete_url = getenv('LANGCHAIN_DELETE_ENDPOINT')
 cors_domains = getenv('CORS_DOMAINS').split(',')
@@ -66,7 +59,10 @@ retriever = db3.as_retriever(
     search_kwargs={"k": 6},
 )
 
-prompt = PromptTemplate.from_template(
+general_prompt = PromptTemplate.from_template("{question}")
+general_runnable = general_prompt | ChatOpenAI(model="gpt-3.5-turbo") | StrOutputParser()
+
+trials_prompt = PromptTemplate.from_template(
     """
     *** Instructions ***
     Use the following pieces of context about clinical trials to answer the user's question. Add the necessary information about the trials. If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -77,8 +73,23 @@ prompt = PromptTemplate.from_template(
     *** User's Question ***
     {question}"""
 )
+trials_runnable = trials_prompt | ChatOpenAI(model="gpt-3.5-turbo", base_url="https://api.openai.com/v1", api_key=openai_token) | StrOutputParser()
 
-runnable = prompt | ChatOpenAI(model="gpt-3.5-turbo") | StrOutputParser()
+classification_chain = (
+    PromptTemplate.from_template(
+        """Given the user question below, classify it as either being about `clinicalTrials`, `cancerGuidelines`, or `general`.
+
+Do not respond with more than one word.
+
+<question>
+{question}
+</question>
+
+Classification:"""
+    )
+    | ChatOpenAI(model="gpt-3.5-turbo", base_url="https://api.openai.com/v1", api_key=openai_token)
+    | StrOutputParser()
+)
 
 
 def authenticated_only(f):
@@ -127,18 +138,28 @@ def login():
 
 
 @app.route('/send-message', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def send_message():
     message = request.json.get('message', '')
     docs = retriever.get_relevant_documents(message)
     text = ""
-    for doc in docs:
-        text += f"""Clinical trial nctId: {doc.metadata["nctId"]}
-    Information: {doc.page_content}
 
-    """
-    response = runnable.invoke({"question": message, "context": text})
-    return jsonify({'response': response})
+    classification = classification_chain.invoke({"question": message})
+    print("classification: `" + classification, flush=True)
+
+    if "clinicaltrials" in classification.lower():
+        for doc in docs:
+            text += f"""Clinical trial nctId: {doc.metadata["nctId"]} \nInformation: {doc.page_content} \n\n"""
+        response = trials_runnable.invoke({"question": message, "context": text})
+        return jsonify({'response': response})
+
+    elif "cancerguidelines" or "general" in classification.lower():
+        response = general_runnable.invoke({"question": message})
+        return jsonify({'response': response})
+
+    else:
+        response = general_runnable.invoke({"question": message})
+        return jsonify({'response': response})
 
 
 if __name__ == '__main__':
